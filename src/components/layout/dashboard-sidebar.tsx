@@ -1,0 +1,89 @@
+"use client";
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  Package, 
+  ShoppingCart, 
+  CircleDollarSign, 
+  ExternalLink,
+  LogOut,
+  Smartphone
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useStoreData } from '@/hooks/use-store-data';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
+
+export function DashboardSidebar() {
+  const pathname = usePathname();
+  const { logout, store } = useStoreData();
+
+  const navItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Products', href: '/dashboard/products', icon: Package },
+    { name: 'In-Person Sales', href: '/dashboard/sales', icon: CircleDollarSign },
+  ];
+
+  return (
+    <div className="w-64 bg-card border-r h-screen flex flex-col fixed left-0 top-0 z-40">
+      <div className="p-6">
+        <Link href="/dashboard" className="flex items-center gap-2 text-primary">
+          <Smartphone className="h-6 w-6" />
+          <span className="text-xl font-bold">StoreStack</span>
+        </Link>
+      </div>
+      
+      <div className="px-3 py-2 flex-1">
+        <div className="space-y-1">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
+                pathname === item.href 
+                  ? "bg-primary text-primary-foreground shadow-sm" 
+                  : "text-muted-foreground hover:bg-secondary hover:text-primary"
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.name}
+            </Link>
+          ))}
+        </div>
+
+        <Separator className="my-4 mx-3" />
+
+        <div className="px-3 py-2">
+          <p className="text-xs font-semibold text-muted-foreground uppercase mb-2 tracking-wider">Public View</p>
+          <Link
+            href={`/store/${store?.storeId}/catalog`}
+            target="_blank"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-primary transition-all"
+          >
+            <ExternalLink className="h-4 w-4" />
+            My Catalog
+          </Link>
+        </div>
+      </div>
+
+      <div className="p-4 bg-secondary/50 m-4 rounded-xl">
+        <div className="flex flex-col gap-1 mb-4">
+          <p className="text-xs text-muted-foreground">Store ID</p>
+          <p className="text-sm font-mono font-bold text-primary bg-white p-2 rounded border border-primary/20 break-all select-all">{store?.storeId}</p>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={logout}
+          className="w-full flex justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+        >
+          <LogOut className="h-4 w-4" />
+          Sign Out
+        </Button>
+      </div>
+    </div>
+  );
+}
