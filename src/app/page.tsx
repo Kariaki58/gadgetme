@@ -1,16 +1,23 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Smartphone, BarChart3, Store, ShieldCheck } from 'lucide-react';
+import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b bg-white/50 backdrop-blur-md sticky top-0 z-50">
-        <Link className="flex items-center justify-center gap-2" href="/">
-          <div className="bg-primary p-1.5 rounded-lg">
-            <Smartphone className="h-6 w-6 text-white" />
+      <header className="px-4 lg:px-6 h-20 flex items-center border-b bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <Link className="flex items-center justify-center gap-3" href="/">
+          <div className="relative w-20 h-20">
+            <Image
+              src="/store-logo.png"
+              alt="Store Logo"
+              fill
+              className="object-contain"
+              priority
+            />
           </div>
-          <span className="text-xl font-bold tracking-tight text-primary">GadgetMe</span>
+          {/* <span className="text-2xl font-bold tracking-tight text-primary">Karigad</span> */}
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
@@ -22,65 +29,169 @@ export default function Home() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-gradient-to-b from-background to-white">
-          <div className="container px-4 md:px-6 mx-auto">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-primary">
-                  The Complete Multi-Tenant Gadget Store SaaS
+        {/* Hero Section */}
+        <section className="w-full py-16 md:py-24 lg:py-32 xl:py-40 bg-gradient-to-br from-primary/5 via-background to-primary/10 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+          <div className="container px-4 md:px-6 mx-auto relative z-10">
+            <div className="flex flex-col items-center space-y-8 text-center max-w-4xl mx-auto">
+              <div className="space-y-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                  <Zap className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Powerful E-Commerce Platform</span>
+                </div>
+                <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Your Store, Your Way
                 </h1>
-                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
-                  Manage your inventory, track sales, and generate public catalogs with zero effort. Built for modern Nigerian retail businesses.
+                <p className="mx-auto max-w-[700px] text-lg md:text-xl text-muted-foreground leading-relaxed">
+                  Manage your inventory, track sales, and generate beautiful public catalogs with zero effort. 
+                  Built for modern Nigerian retail businesses who want to grow online.
                 </p>
               </div>
-              <div className="space-x-4">
-                <Button asChild size="lg" className="px-8 bg-primary">
-                  <Link href="/signup">Start Free Trial</Link>
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                <Button asChild size="lg" className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                  <Link href="/signup" className="flex items-center gap-2">
+                    Get Started Free
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
                 </Button>
-                <Button variant="outline" size="lg" className="px-8 border-primary text-primary hover:bg-primary/5">
-                  View Demo
+                <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-2 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all">
+                  <Link href="/login">Sign In</Link>
                 </Button>
+              </div>
+              <div className="flex items-center gap-8 pt-8 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <span>No Credit Card Required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <span>Free Forever Plan</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <span>Setup in Minutes</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="w-full py-12 md:py-24 lg:py-32 bg-secondary/30">
+        {/* Features Section */}
+        <section className="w-full py-20 md:py-28 lg:py-32 bg-white">
           <div className="container px-4 md:px-6 mx-auto">
-            <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="flex flex-col items-center space-y-4 text-center p-6 bg-white rounded-2xl shadow-sm border border-primary/10">
-                <div className="bg-primary/10 p-3 rounded-full">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                Everything You Need to Run Your Store
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Powerful features designed to help you manage, grow, and scale your business effortlessly
+              </p>
+            </div>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="group flex flex-col space-y-4 p-8 bg-gradient-to-br from-white to-primary/5 rounded-2xl shadow-sm border border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                <div className="bg-primary/10 p-4 rounded-xl w-fit group-hover:bg-primary/20 transition-colors">
                   <Store className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold">Multi-Store Magic</h3>
-                <p className="text-muted-foreground">Each owner gets a unique store ID and isolated dashboard for total data privacy.</p>
+                <h3 className="text-2xl font-bold text-foreground">Multi-Store Magic</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Each owner gets a unique store ID and isolated dashboard for total data privacy and security.
+                </p>
               </div>
-              <div className="flex flex-col items-center space-y-4 text-center p-6 bg-white rounded-2xl shadow-sm border border-primary/10">
-                <div className="bg-primary/10 p-3 rounded-full">
+              <div className="group flex flex-col space-y-4 p-8 bg-gradient-to-br from-white to-primary/5 rounded-2xl shadow-sm border border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                <div className="bg-primary/10 p-4 rounded-xl w-fit group-hover:bg-primary/20 transition-colors">
                   <BarChart3 className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold">Profit Analytics</h3>
-                <p className="text-muted-foreground">Real-time tracking of revenue, profit, and overcharges with interactive charts.</p>
+                <h3 className="text-2xl font-bold text-foreground">Real-Time Analytics</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Track revenue, profit, and sales with beautiful interactive charts and detailed reports.
+                </p>
               </div>
-              <div className="flex flex-col items-center space-y-4 text-center p-6 bg-white rounded-2xl shadow-sm border border-primary/10">
-                <div className="bg-primary/10 p-3 rounded-full">
+              <div className="group flex flex-col space-y-4 p-8 bg-gradient-to-br from-white to-primary/5 rounded-2xl shadow-sm border border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                <div className="bg-primary/10 p-4 rounded-xl w-fit group-hover:bg-primary/20 transition-colors">
+                  <ShoppingBag className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Public Catalog</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Generate beautiful, shareable product catalogs with QR codes for easy customer access.
+                </p>
+              </div>
+              <div className="group flex flex-col space-y-4 p-8 bg-gradient-to-br from-white to-primary/5 rounded-2xl shadow-sm border border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                <div className="bg-primary/10 p-4 rounded-xl w-fit group-hover:bg-primary/20 transition-colors">
+                  <TrendingUp className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">POS System</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Complete point-of-sale system with cash and transfer tracking, inventory management, and more.
+                </p>
+              </div>
+              <div className="group flex flex-col space-y-4 p-8 bg-gradient-to-br from-white to-primary/5 rounded-2xl shadow-sm border border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                <div className="bg-primary/10 p-4 rounded-xl w-fit group-hover:bg-primary/20 transition-colors">
+                  <Users className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Order Management</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Handle online and in-person orders with delivery tracking, payment confirmation, and status updates.
+                </p>
+              </div>
+              <div className="group flex flex-col space-y-4 p-8 bg-gradient-to-br from-white to-primary/5 rounded-2xl shadow-sm border border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300">
+                <div className="bg-primary/10 p-4 rounded-xl w-fit group-hover:bg-primary/20 transition-colors">
                   <ShieldCheck className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold">Secure Local Storage</h3>
-                <p className="text-muted-foreground">Your data stays in your browser. Fast, private, and always available offline.</p>
+                <h3 className="text-2xl font-bold text-foreground">Secure & Fast</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  Built on modern infrastructure with enterprise-grade security and lightning-fast performance.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="w-full py-20 md:py-28 bg-gradient-to-r from-primary to-primary/80">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="max-w-3xl mx-auto text-center space-y-8">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
+                Ready to Grow Your Business?
+              </h2>
+              <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+                Join hundreds of Nigerian retailers who are already using Karigad to manage their stores and reach more customers.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
+                <Button asChild size="lg" className="px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 shadow-xl">
+                  <Link href="/signup" className="flex items-center gap-2">
+                    Start Free Trial
+                    <ArrowRight className="h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-2 border-white text-white hover:bg-white/10">
+                  <Link href="/login">Sign In</Link>
+                </Button>
               </div>
             </div>
           </div>
         </section>
       </main>
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">© 2024 GadgetMe. All rights reserved.</p>
-        <nav className="sm:ml-auto flex gap-4 sm:gap-6">
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
+      <footer className="flex flex-col gap-4 sm:flex-row py-8 w-full shrink-0 items-center justify-between px-4 md:px-6 border-t bg-secondary/30">
+        <div className="flex items-center gap-3">
+          <div className="relative w-20 h-20">
+            <Image
+              src="/store-logo.png"
+              alt="Store Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">© 2024 Karigad. All rights reserved.</p>
+        </div>
+        <nav className="flex gap-6">
+          <Link className="text-sm hover:text-primary transition-colors" href="#">
             Terms of Service
           </Link>
-          <Link className="text-xs hover:underline underline-offset-4" href="#">
-            Privacy
+          <Link className="text-sm hover:text-primary transition-colors" href="#">
+            Privacy Policy
+          </Link>
+          <Link className="text-sm hover:text-primary transition-colors" href="#">
+            Contact
           </Link>
         </nav>
       </footer>

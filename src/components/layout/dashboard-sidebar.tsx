@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { 
@@ -10,7 +11,6 @@ import {
   CircleDollarSign, 
   ExternalLink,
   LogOut,
-  Smartphone,
   Receipt,
   ScanLine,
   Settings
@@ -44,9 +44,16 @@ export function DashboardSidebar() {
   return (
     <div className="w-64 bg-card border-r h-screen flex flex-col fixed left-0 top-0 z-40">
       <div className="p-6">
-        <Link href="/dashboard" className="flex items-center gap-2 text-primary">
-          <Smartphone className="h-6 w-6" />
-          <span className="text-xl font-bold">GadgetMe</span>
+        <Link href="/dashboard" className="flex items-center gap-3 text-primary">
+          <div className="relative w-8 h-8 flex-shrink-0">
+            <Image
+              src="/store-logo.png"
+              alt="Store Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <span className="text-xl font-bold truncate">{store?.storeName || 'Store'}</span>
         </Link>
       </div>
       

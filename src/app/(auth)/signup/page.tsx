@@ -84,7 +84,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Smartphone className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold text-primary">GadgetMe</span>
+          <span className="text-2xl font-bold text-primary">Karigad</span>
         </div>
         <Card className="border-primary/20 shadow-xl">
           <CardHeader className="space-y-1">
