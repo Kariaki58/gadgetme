@@ -55,6 +55,7 @@ export function DashboardSidebar({ isOpen, onToggle, isMobile = false }: Dashboa
     { name: 'POS System', href: '/dashboard/pos', icon: ScanLine },
     { name: 'Products', href: '/dashboard/products', icon: Package },
     { name: 'Orders', href: '/dashboard/orders', icon: Receipt },
+    { name: 'Subscription', href: '/dashboard/subscription', icon: CircleDollarSign },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 

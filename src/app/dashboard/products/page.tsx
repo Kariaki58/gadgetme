@@ -50,6 +50,7 @@ export default function ProductsPage() {
   const [isAIGenerating, setIsAIGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCreatingStore, setIsCreatingStore] = useState(false);
+  const [isCreatingProduct, setIsCreatingProduct] = useState(false);
   const [storeName, setStoreName] = useState('');
 
   const [formData, setFormData] = useState({
@@ -221,39 +222,44 @@ export default function ProductsPage() {
       return;
     }
 
-    const success = await addProduct({
-      name: formData.name,
-      category: formData.category,
-      description: formData.description,
-      costPrice: Number(formData.costPrice),
-      sellingPrice: Number(formData.sellingPrice),
-      baseStock: Number(formData.baseStock),
-      imageUrls: formData.imageUrls,
-      variants: formData.variants,
-    });
+    setIsCreatingProduct(true);
+    try {
+      const success = await addProduct({
+        name: formData.name,
+        category: formData.category,
+        description: formData.description,
+        costPrice: Number(formData.costPrice),
+        sellingPrice: Number(formData.sellingPrice),
+        baseStock: Number(formData.baseStock),
+        imageUrls: formData.imageUrls,
+        variants: formData.variants,
+      });
 
-    if (success) {
-      setIsAdding(false);
-      setFormData({ 
-        name: '', 
-        category: '', 
-        description: '', 
-        costPrice: 0, 
-        sellingPrice: 0, 
-        baseStock: 0,
-        imageUrls: [],
-        variants: [],
-      });
-      toast({ 
-        title: "Product Added", 
-        description: "Your new product is now in inventory." 
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to add product. Please try again.",
-        variant: "destructive"
-      });
+      if (success) {
+        setIsAdding(false);
+        setFormData({ 
+          name: '', 
+          category: '', 
+          description: '', 
+          costPrice: 0, 
+          sellingPrice: 0, 
+          baseStock: 0,
+          imageUrls: [],
+          variants: [],
+        });
+        toast({ 
+          title: "Product Added", 
+          description: "Your new product is now in inventory." 
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to add product. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsCreatingProduct(false);
     }
   };
 
@@ -481,7 +487,7 @@ export default function ProductsPage() {
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <Label htmlFor="description">Description</Label>
-                  <Button 
+                  {/* <Button 
                     type="button" 
                     variant="outline" 
                     size="sm" 
@@ -491,7 +497,7 @@ export default function ProductsPage() {
                   >
                     <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                     {isAIGenerating ? 'Generating...' : 'AI Generate'}
-                  </Button>
+                  </Button> */}
                 </div>
                 <Textarea 
                   id="description" 
@@ -604,11 +610,27 @@ export default function ProductsPage() {
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsAdding(false)}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsAdding(false)}
+                  disabled={isCreatingProduct}
+                >
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-primary">
-                  Create Product
+                <Button 
+                  type="submit" 
+                  className="bg-primary"
+                  disabled={isCreatingProduct}
+                >
+                  {isCreatingProduct ? (
+                    <>
+                      <Package className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Product...
+                    </>
+                  ) : (
+                    'Create Product'
+                  )}
                 </Button>
               </DialogFooter>
             </form>

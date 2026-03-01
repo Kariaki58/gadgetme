@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, UserPlus, X, CreditCard, Smartphone, Wallet, ArrowLeftRight, Loader2 } from 'lucide-react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
+import { ShoppingCart, Plus, Minus, Trash2, UserPlus, X, CreditCard, Smartphone, Wallet, ArrowLeftRight, Loader2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,20 @@ import { useStoreDataSupabase } from '@/hooks/use-store-data-supabase';
 import { numberToWords } from '@/lib/number-to-words';
 import { useAuth } from '@/contexts/auth-context';
 import { getStockForVariant } from '@/lib/supabase/transformers';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogDescription 
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface CartItem {
   productId: string;
@@ -43,6 +57,10 @@ export default function POSPage() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [actualAmountCollected, setActualAmountCollected] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [showVariantDialog, setShowVariantDialog] = useState(false);
+  const [selectedProductForVariant, setSelectedProductForVariant] = useState<typeof products[0] | null>(null);
   const { user } = useAuth();
   const { store, products: storeProducts, loading, loadStoreData, addPOSTransaction } = useStoreDataSupabase();
   
@@ -57,12 +75,30 @@ export default function POSPage() {
   const products = storeProducts.map(p => ({
     id: p.id,
     name: p.name,
+    category: p.category,
     price: p.sellingPrice,
     costPrice: p.costPrice,
     imageUrl: p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls[0] : null,
     stock: p.baseStock,
     variants: p.variants || [],
   }));
+
+  // Get unique categories
+  const categories = useMemo(() => {
+    const uniqueCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
+    return uniqueCategories.sort();
+  }, [products]);
+
+  // Filter products based on search and category
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      const matchesSearch = !searchTerm || 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.category.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, selectedCategory]);
 
   const activeCustomer = customers.find(c => c.id === activeCustomerId) || (customers.length > 0 ? customers[0] : null);
   
@@ -127,6 +163,20 @@ export default function POSPage() {
     );
   }, [activeCustomerId, toast, products, storeProducts]);
 
+  const handleProductClick = useCallback((productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+
+    // If product has variants, show variant selection dialog
+    if (product.variants && product.variants.length > 0) {
+      setSelectedProductForVariant(product);
+      setShowVariantDialog(true);
+    } else {
+      // No variants, add directly to cart
+      addToCart(productId);
+    }
+  }, [products, addToCart]);
+
   const updateQuantity = useCallback((productId: string, delta: number, variantId?: string) => {
     setCustomers(prev =>
       prev.map(customer =>
@@ -146,13 +196,15 @@ export default function POSPage() {
     );
   }, [activeCustomerId]);
 
-  const removeItem = useCallback((productId: string) => {
+  const removeItem = useCallback((productId: string, variantId?: string) => {
     setCustomers(prev =>
       prev.map(customer =>
         customer.id === activeCustomerId
           ? {
               ...customer,
-              items: customer.items.filter(item => item.productId !== productId),
+              items: customer.items.filter(item => 
+                !(item.productId === productId && item.variantId === variantId)
+              ),
             }
           : customer
       )
@@ -323,8 +375,41 @@ export default function POSPage() {
       <div className="flex-1 flex overflow-hidden">
         {/* Main Product Grid */}
         <div className="flex-1 overflow-y-auto p-6">
+          {/* Search and Category Filter */}
+          <div className="mb-6 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-[1600px]">
-            {products.map(product => {
+            {filteredProducts.length === 0 ? (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <Smartphone className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p className="font-medium">No products found</p>
+                <p className="text-sm">Try adjusting your search or category filter</p>
+              </div>
+            ) : (
+              filteredProducts.map(product => {
               const cartItem = activeCustomer?.items.find(item => item.productId === product.id);
               const inCartQty = cartItem?.quantity || 0;
               
@@ -332,7 +417,7 @@ export default function POSPage() {
                  <Card
                    key={product.id}
                    className="group hover:shadow-xl hover:border-primary/30 transition-all duration-200 border-primary/10 cursor-pointer bg-white overflow-hidden"
-                   onClick={() => addToCart(product.id)}
+                   onClick={() => handleProductClick(product.id)}
                  >
                    <CardContent className="p-4 flex flex-col h-full">
                      <div className="aspect-square bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl flex items-center justify-center mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-200">
@@ -369,7 +454,7 @@ export default function POSPage() {
                    </CardContent>
                  </Card>
               );
-            })}
+            }))}
           </div>
         </div>
 
@@ -470,7 +555,7 @@ export default function POSPage() {
                               variant="outline"
                               size="icon"
                               className="h-7 w-7"
-                              onClick={() => updateQuantity(item.productId, -1)}
+                              onClick={() => updateQuantity(item.productId, -1, item.variantId)}
                             >
                               <Minus className="h-3 w-3" />
                             </Button>
@@ -491,7 +576,7 @@ export default function POSPage() {
                                         ? {
                                             ...customer,
                                             items: customer.items.map(i =>
-                                              i.productId === item.productId
+                                              i.productId === item.productId && i.variantId === item.variantId
                                                 ? { ...i, quantity: val }
                                                 : i
                                             ).filter(i => i.quantity > 0),
@@ -517,7 +602,7 @@ export default function POSPage() {
                               variant="ghost"
                               size="icon"
                               className="h-7 w-7 ml-auto text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => removeItem(item.productId)}
+                              onClick={() => removeItem(item.productId, item.variantId)}
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
@@ -684,6 +769,92 @@ export default function POSPage() {
           </Card>
         </div>
       )}
+
+      {/* Variant Selection Dialog */}
+      <Dialog open={showVariantDialog} onOpenChange={setShowVariantDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Variant</DialogTitle>
+            <DialogDescription>
+              Choose a color variant for {selectedProductForVariant?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedProductForVariant && (
+            <div className="space-y-3 py-4">
+              {selectedProductForVariant.variants && selectedProductForVariant.variants.length > 0 ? (
+                selectedProductForVariant.variants.map((variant) => {
+                  const storeProduct = storeProducts.find(p => p.id === selectedProductForVariant.id);
+                  const stock = storeProduct ? getStockForVariant(storeProduct, variant.id) : 0;
+                  const isOutOfStock = stock <= 0;
+                  
+                  return (
+                    <Button
+                      key={variant.id}
+                      variant="outline"
+                      className={`w-full justify-start h-auto p-4 ${
+                        isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/5 hover:border-primary/30'
+                      }`}
+                      onClick={() => {
+                        if (!isOutOfStock) {
+                          addToCart(selectedProductForVariant.id, variant.id);
+                          setShowVariantDialog(false);
+                          setSelectedProductForVariant(null);
+                        }
+                      }}
+                      disabled={isOutOfStock}
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div
+                          className="w-8 h-8 rounded border-2 border-primary/20 shrink-0"
+                          style={{ backgroundColor: variant.colorHex }}
+                        />
+                        <div className="flex-1 text-left">
+                          <div className="font-semibold">{variant.colorName}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {isOutOfStock ? 'Out of stock' : `${stock} available`}
+                          </div>
+                        </div>
+                        <div className="font-bold text-primary">
+                          ₦{selectedProductForVariant.price.toLocaleString()}
+                        </div>
+                      </div>
+                    </Button>
+                  );
+                })
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No variants available
+                </p>
+              )}
+              {/* Option to add base product without variant if it has stock */}
+              {selectedProductForVariant.stock > 0 && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-auto p-4 hover:bg-primary/5 hover:border-primary/30 mt-3"
+                  onClick={() => {
+                    addToCart(selectedProductForVariant.id);
+                    setShowVariantDialog(false);
+                    setSelectedProductForVariant(null);
+                  }}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <div className="w-8 h-8 rounded border-2 border-primary/20 shrink-0 bg-secondary" />
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold">Base Product (No Variant)</div>
+                      <div className="text-xs text-muted-foreground">
+                        {selectedProductForVariant.stock} available
+                      </div>
+                    </div>
+                    <div className="font-bold text-primary">
+                      ₦{selectedProductForVariant.price.toLocaleString()}
+                    </div>
+                  </div>
+                </Button>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -3,18 +3,22 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
+import { useSubscription } from '@/hooks/use-subscription';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Save, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Loader2, Save, Check, CreditCard, Calendar, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { store, loading: storeLoading } = useStoreDataSupabaseAuth();
+  const { subscription, isActive, refreshSubscription } = useSubscription();
   const [saving, setSaving] = useState(false);
+  const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
   
   const [formData, setFormData] = useState({
     storeName: '',
@@ -51,6 +55,23 @@ export default function SettingsPage() {
       });
     }
   }, [store]);
+
+  // Handle payment success redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') === 'success') {
+      toast({
+        title: "Payment Successful!",
+        description: "Your subscription is being activated. Please wait a moment...",
+      });
+      // Refresh subscription after a short delay to allow webhook to process
+      setTimeout(() => {
+        refreshSubscription();
+      }, 3000);
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard/settings');
+    }
+  }, [toast, refreshSubscription]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,6 +320,136 @@ export default function SettingsPage() {
                   />
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Subscription Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription</CardTitle>
+              <CardDescription>Manage your subscription plan</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {subscription ? (
+                <>
+                  <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Current Plan:</span>
+                        <Badge variant={isActive ? 'default' : 'destructive'}>
+                          {subscription.plan_type === 'trial' ? 'Trial' : 
+                           subscription.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
+                        </Badge>
+                        <Badge variant={isActive ? 'default' : 'destructive'}>
+                          {subscription.status === 'trial' ? 'Trial' :
+                           subscription.status === 'active' ? 'Active' :
+                           subscription.status === 'expired' ? 'Expired' : 'Cancelled'}
+                        </Badge>
+                      </div>
+                      {subscription.plan_type === 'trial' && subscription.trial_end_date && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            Trial ends: {new Date(subscription.trial_end_date).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {subscription.current_period_end && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      {subscription.amount_paid && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CreditCard className="h-4 w-4" />
+                          <span>
+                            Amount: ₦{subscription.amount_paid.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {!isActive && (
+                    <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 mb-3">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span className="font-semibold">Subscription Required</span>
+                      </div>
+                      <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
+                        Your subscription has expired. Please subscribe to continue using GadgetMe.
+                      </p>
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={async () => {
+                            try {
+                              setIsCreatingCheckout(true);
+                              const response = await fetch('/api/subscriptions/checkout', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ planType: 'monthly' }),
+                              });
+                              const data = await response.json();
+                              if (data.checkoutUrl) {
+                                window.location.href = data.checkoutUrl;
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to create checkout. Please try again.",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setIsCreatingCheckout(false);
+                            }
+                          }}
+                          disabled={isCreatingCheckout}
+                          className="flex-1"
+                        >
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Subscribe Monthly (₦20,000)
+                        </Button>
+                        <Button
+                          onClick={async () => {
+                            try {
+                              setIsCreatingCheckout(true);
+                              const response = await fetch('/api/subscriptions/checkout', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ planType: 'yearly' }),
+                              });
+                              const data = await response.json();
+                              if (data.checkoutUrl) {
+                                window.location.href = data.checkoutUrl;
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to create checkout. Please try again.",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setIsCreatingCheckout(false);
+                            }
+                          }}
+                          disabled={isCreatingCheckout}
+                          className="flex-1 bg-primary"
+                        >
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          Subscribe Yearly (₦200,000)
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No subscription found. Please contact support.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
 

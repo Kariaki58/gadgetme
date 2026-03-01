@@ -1,12 +1,14 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Form,
   FormControl,
@@ -18,7 +20,8 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
-import { Smartphone, Loader2, Sparkles } from 'lucide-react';
+import { Smartphone, Loader2, Sparkles, CreditCard } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const formSchema = z.object({
   storeName: z.string().min(2, 'Store name must be at least 2 characters'),
@@ -34,14 +37,27 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-import { useActionState, useEffect } from 'react';
+import { useActionState } from 'react';
 import { signup } from '@/app/auth/actions';
 
-export default function SignupPage() {
+function SignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
+  const [selectedPlan, setSelectedPlan] = useState<'free' | 'monthly' | 'yearly' | null>(null);
 
   const [state, formAction, isPending] = useActionState(signup, null);
+
+  // Read plan from URL and save to localStorage
+  useEffect(() => {
+    const plan = searchParams.get('plan') as 'monthly' | 'yearly' | null;
+    if (plan && (plan === 'monthly' || plan === 'yearly')) {
+      setSelectedPlan(plan);
+      localStorage.setItem('preferredBillingCycle', plan);
+    } else {
+      setSelectedPlan('free');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (state?.error) {
@@ -92,6 +108,21 @@ export default function SignupPage() {
             <CardDescription className="text-center">
               Launch your gadget business in seconds
             </CardDescription>
+            {selectedPlan && selectedPlan !== 'free' && (
+              <div className="flex justify-center mt-2">
+                <Badge variant="default" className="bg-primary">
+                  <CreditCard className="h-3 w-3 mr-1" />
+                  {selectedPlan === 'monthly' ? 'Monthly Plan Selected' : 'Yearly Plan Selected'}
+                </Badge>
+              </div>
+            )}
+            {selectedPlan === 'free' && (
+              <div className="flex justify-center mt-2">
+                <Badge variant="outline" className="border-green-500 text-green-600">
+                  Starting with 14-day free trial
+                </Badge>
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -210,5 +241,20 @@ export default function SignupPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20">
+        <div className="text-center space-y-4">
+          <Smartphone className="h-12 w-12 text-primary mx-auto animate-pulse" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignupForm />
+    </Suspense>
   );
 }

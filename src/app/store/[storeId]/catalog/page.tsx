@@ -151,44 +151,46 @@ export default function StoreCatalogPage({ params }: { params: Promise<{ storeId
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {filteredProducts.map(product => {
             const totalStock = getTotalStock(product);
             const firstImage = product.imageUrls && product.imageUrls.length > 0 ? product.imageUrls[0] : null;
             
             return (
-              <Card key={product.id} className="group overflow-hidden border-primary/10 hover:shadow-xl transition-all duration-300">
-                <div className="aspect-square bg-secondary/50 flex items-center justify-center relative overflow-hidden">
-                  {firstImage ? (
-                    <img 
-                      src={firstImage} 
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  ) : (
-                    <Smartphone className="h-20 w-20 text-primary/20 group-hover:scale-110 transition-transform duration-300" />
-                  )}
-                  {totalStock === 0 && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold">
-                      OUT OF STOCK
-                    </div>
-                  )}
-                  <Badge className="absolute top-2 right-2 bg-primary/10 text-primary border-none">{product.category}</Badge>
-                </div>
-                <CardHeader className="p-4 pb-2">
-                  <h3 className="font-bold text-lg leading-tight group-hover:text-primary transition-colors">{product.name}</h3>
-                  <p className="text-2xl font-black text-primary mt-1">₦{product.sellingPrice.toLocaleString()}</p>
+              <Card key={product.id} className="group overflow-hidden border-primary/10 hover:shadow-xl hover:border-primary/30 transition-all duration-300 flex flex-col bg-white">
+                <Link href={`/store/${storeId}/product/${product.id}`} className="block">
+                  <div className="aspect-square bg-gradient-to-br from-secondary/30 to-secondary/10 flex items-center justify-center relative overflow-hidden cursor-pointer">
+                    {firstImage ? (
+                      <img 
+                        src={firstImage} 
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    ) : (
+                      <Smartphone className="h-16 w-16 sm:h-20 sm:w-20 text-primary/20 group-hover:scale-110 transition-transform duration-300" />
+                    )}
+                    {totalStock === 0 && (
+                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center text-white font-bold text-xs sm:text-sm">
+                        OUT OF STOCK
+                      </div>
+                    )}
+                    <Badge className="absolute top-2 right-2 bg-primary/90 text-primary-foreground border-none text-xs font-semibold shadow-sm">
+                      {product.category}
+                    </Badge>
+                  </div>
+                </Link>
+                <CardHeader className="p-3 sm:p-4 pb-2 flex-1 flex flex-col">
+                  <h3 className="font-bold text-sm sm:text-lg leading-tight group-hover:text-primary transition-colors truncate" title={product.name}>
+                    {product.name}
+                  </h3>
+                  <p className="text-lg sm:text-2xl font-black text-primary mt-1">₦{product.sellingPrice.toLocaleString()}</p>
                 </CardHeader>
-                <CardContent className="px-4 py-0">
-                  <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
-                    {product.description || 'No description available.'}
-                  </p>
-                </CardContent>
-                <CardFooter className="p-4 pt-4 space-y-2">
+                <CardFooter className="p-3 sm:p-4 pt-0">
                   <Button 
-                    className="w-full bg-primary hover:bg-primary/90 rounded-xl"
+                    className="w-full bg-primary hover:bg-primary/90 rounded-lg text-xs sm:text-sm font-semibold h-9 sm:h-10"
                     disabled={totalStock === 0}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       addToCart(product, 1);
                       toast({
                         title: "Added to Cart!",
@@ -196,16 +198,7 @@ export default function StoreCatalogPage({ params }: { params: Promise<{ storeId
                       });
                     }}
                   >
-                    <ShoppingBag className="mr-2 h-4 w-4" /> Add to Cart
-                  </Button>
-                  <Button 
-                    asChild 
-                    variant="outline"
-                    className="w-full rounded-xl"
-                  >
-                    <Link href={`/store/${storeId}/product/${product.id}`}>
-                      View Details
-                    </Link>
+                    <ShoppingBag className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" /> Add to Cart
                   </Button>
                 </CardFooter>
               </Card>

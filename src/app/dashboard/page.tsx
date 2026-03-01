@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
@@ -12,8 +12,13 @@ import {
   ShoppingCart,
   Zap,
   Wallet,
-  ArrowLeftRight
+  ArrowLeftRight,
+  Settings,
+  X
 } from 'lucide-react';
+import Link from 'next/link';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { 
   BarChart, 
   Bar, 
@@ -34,6 +39,48 @@ type TimeFilter = 'today' | '7days' | '30days' | 'all';
 export default function DashboardPage() {
   const { store, orders, posTransactions, loading } = useStoreDataSupabaseAuth();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('today');
+  const [dismissedBanner, setDismissedBanner] = useState(false);
+
+  // Check if store information is incomplete
+  const isStoreInfoIncomplete = () => {
+    if (!store) return false;
+    
+    const missingFields: string[] = [];
+    
+    // Check required fields
+    if (!store.storeName || store.storeName.trim() === '') {
+      missingFields.push('Store Name');
+    }
+    
+    // Check account details (important for receiving payments)
+    if (!store.accountDetails?.bankName || store.accountDetails.bankName.trim() === '') {
+      missingFields.push('Bank Name');
+    }
+    if (!store.accountDetails?.accountNumber || store.accountDetails.accountNumber.trim() === '') {
+      missingFields.push('Account Number');
+    }
+    if (!store.accountDetails?.accountName || store.accountDetails.accountName.trim() === '') {
+      missingFields.push('Account Name');
+    }
+    
+    // Check contact information (important for customer communication)
+    if (!store.whatsappNumber || store.whatsappNumber.trim() === '') {
+      missingFields.push('WhatsApp Number');
+    }
+    
+    // Check location information (important for delivery/pickup)
+    if (!store.address || store.address.trim() === '') {
+      missingFields.push('Address');
+    }
+    if (!store.city || store.city.trim() === '') {
+      missingFields.push('City');
+    }
+    if (!store.state || store.state.trim() === '') {
+      missingFields.push('State');
+    }
+    
+    return missingFields.length > 0;
+  };
 
   // Filter data based on time filter - MUST be called before any conditional returns
   const getFilteredData = useMemo(() => {
@@ -70,6 +117,26 @@ export default function DashboardPage() {
 
     return { filteredOrders, filteredTransactions };
   }, [orders, posTransactions, timeFilter]);
+
+  // Reset dismissed banner when store data changes and info is complete
+  useEffect(() => {
+    if (store) {
+      // Check if store info is complete
+      const hasAllInfo = 
+        store.storeName?.trim() &&
+        store.accountDetails?.bankName?.trim() &&
+        store.accountDetails?.accountNumber?.trim() &&
+        store.accountDetails?.accountName?.trim() &&
+        store.whatsappNumber?.trim() &&
+        store.address?.trim() &&
+        store.city?.trim() &&
+        store.state?.trim();
+      
+      if (hasAllInfo) {
+        setDismissedBanner(false);
+      }
+    }
+  }, [store]);
 
   if (loading) {
     return (
@@ -187,8 +254,42 @@ export default function DashboardPage() {
 
   const barData = generateBarData();
 
+  const showBanner = isStoreInfoIncomplete() && !dismissedBanner;
+
   return (
     <div className="space-y-8">
+      {/* Incomplete Store Information Banner */}
+      {showBanner && (
+        <Alert className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-900 dark:text-amber-100 font-semibold">
+            Complete Your Store Setup
+          </AlertTitle>
+          <AlertDescription className="text-amber-800 dark:text-amber-200 mt-2">
+            <p className="mb-3">
+              Your store information is incomplete. Please update your settings to ensure customers can contact you and receive payments properly.
+            </p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <Link href="/dashboard/settings">
+                <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Update Settings
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                onClick={() => setDismissedBanner(true)}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Dismiss
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-primary">Welcome back, {store.storeName}</h1>
