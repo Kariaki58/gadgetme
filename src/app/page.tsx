@@ -470,13 +470,13 @@ export default function Home() {
           <p className="text-sm text-muted-foreground">© 2024 Karigad. All rights reserved.</p>
         </div>
         <nav className="flex gap-6">
-          <Link className="text-sm hover:text-primary transition-colors" href="#">
+          <Link className="text-sm hover:text-primary transition-colors" href="/terms">
             Terms of Service
           </Link>
-          <Link className="text-sm hover:text-primary transition-colors" href="#">
+          <Link className="text-sm hover:text-primary transition-colors" href="/privacy">
             Privacy Policy
           </Link>
-          <Link className="text-sm hover:text-primary transition-colors" href="#">
+          <Link className="text-sm hover:text-primary transition-colors" href="/contact">
             Contact
           </Link>
         </nav>
