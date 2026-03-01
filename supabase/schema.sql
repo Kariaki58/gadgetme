@@ -69,7 +69,7 @@ CREATE TABLE products (
     cost_price DECIMAL(12, 2) NOT NULL,
     selling_price DECIMAL(12, 2) NOT NULL,
     base_stock INTEGER NOT NULL DEFAULT 0,
-    image_url TEXT,
+    image_urls TEXT[] DEFAULT ARRAY[]::TEXT[],
     created_at TIMESTAMP
     WITH
         TIME ZONE DEFAULT NOW(),

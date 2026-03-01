@@ -17,6 +17,12 @@ interface Store {
     accountName: string;
     phoneNumber?: string;
   };
+  acceptsDelivery?: boolean;
+  acceptsPickup?: boolean;
+  whatsappNumber?: string;
+  address?: string;
+  city?: string;
+  state?: string;
 }
 
 export function useStoreDataSupabaseAuth() {
@@ -62,6 +68,12 @@ export function useStoreDataSupabaseAuth() {
           accountName: storeData.account_name,
           phoneNumber: storeData.account_phone,
         } : undefined,
+        acceptsDelivery: storeData.accepts_delivery || false,
+        acceptsPickup: storeData.accepts_pickup !== undefined ? storeData.accepts_pickup : true,
+        whatsappNumber: storeData.whatsapp_number,
+        address: storeData.address,
+        city: storeData.city,
+        state: storeData.state,
       });
 
       // Load products

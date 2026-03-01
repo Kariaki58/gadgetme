@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, UserPlus, X, CreditCard } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, UserPlus, X, CreditCard, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -58,7 +58,7 @@ export default function POSPage() {
     name: p.name,
     price: p.sellingPrice,
     costPrice: p.costPrice,
-    image: p.imageUrl ? p.imageUrl : '📱',
+    imageUrl: p.imageUrls && p.imageUrls.length > 0 ? p.imageUrls[0] : null,
     stock: p.baseStock,
     variants: p.variants || [],
   }));
@@ -328,8 +328,16 @@ export default function POSPage() {
                    onClick={() => addToCart(product.id)}
                  >
                    <CardContent className="p-4 flex flex-col h-full">
-                     <div className="aspect-square bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl flex items-center justify-center mb-3 text-6xl group-hover:scale-105 transition-transform duration-200">
-                       {product.image}
+                     <div className="aspect-square bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl flex items-center justify-center mb-3 overflow-hidden group-hover:scale-105 transition-transform duration-200">
+                       {product.imageUrl ? (
+                         <img 
+                           src={product.imageUrl} 
+                           alt={product.name}
+                           className="w-full h-full object-cover"
+                         />
+                       ) : (
+                         <Smartphone className="h-16 w-16 text-primary/20" />
+                       )}
                      </div>
                      <div className="flex-1 flex flex-col">
                        <h3 className="font-bold text-sm mb-2 line-clamp-2 min-h-[2.5rem] text-foreground leading-tight">
@@ -427,8 +435,16 @@ export default function POSPage() {
                   <Card key={`${item.productId}-${item.variantId || 'base'}-${index}`} className="border-primary/10 hover:border-primary/20 transition-colors">
                     <CardContent className="p-4">
                       <div className="flex gap-3">
-                        <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center text-2xl shrink-0">
-                          {product.image}
+                        <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                          {product.imageUrl ? (
+                            <img 
+                              src={product.imageUrl} 
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <Smartphone className="h-6 w-6 text-primary/20" />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-sm line-clamp-2 mb-1 leading-tight">

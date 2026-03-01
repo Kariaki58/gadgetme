@@ -12,7 +12,8 @@ import {
   LogOut,
   Smartphone,
   Receipt,
-  ScanLine
+  ScanLine,
+  Settings
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
@@ -37,6 +38,7 @@ export function DashboardSidebar() {
     { name: 'POS System', href: '/dashboard/pos', icon: ScanLine },
     { name: 'Products', href: '/dashboard/products', icon: Package },
     { name: 'Orders', href: '/dashboard/orders', icon: Receipt },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
   return (

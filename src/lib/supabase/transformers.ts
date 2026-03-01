@@ -2,6 +2,18 @@ import { Product, ProductVariant, StoreData, POSTransaction } from '@/types/stor
 
 // Transform Supabase product to app Product type
 export function transformProduct(supabaseProduct: any): Product {
+  // Handle both old single image_url and new image_urls array
+  let imageUrls: string[] = [];
+  if (supabaseProduct.image_urls) {
+    // New format: array
+    imageUrls = Array.isArray(supabaseProduct.image_urls) 
+      ? supabaseProduct.image_urls 
+      : [];
+  } else if (supabaseProduct.image_url) {
+    // Old format: single string (for backward compatibility)
+    imageUrls = supabaseProduct.image_url ? [supabaseProduct.image_url] : [];
+  }
+
   return {
     id: supabaseProduct.id,
     storeId: supabaseProduct.store_id,
@@ -11,7 +23,7 @@ export function transformProduct(supabaseProduct: any): Product {
     costPrice: parseFloat(supabaseProduct.cost_price),
     sellingPrice: parseFloat(supabaseProduct.selling_price),
     baseStock: supabaseProduct.base_stock || 0,
-    imageUrl: supabaseProduct.image_url,
+    imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
     variants: supabaseProduct.product_variants
       ? supabaseProduct.product_variants.map((v: any) => ({
           id: v.id,
@@ -36,7 +48,7 @@ export function transformProductForSupabase(product: Partial<Product>) {
     cost_price: product.costPrice,
     selling_price: product.sellingPrice,
     base_stock: product.baseStock,
-    image_url: product.imageUrl,
+    image_urls: product.imageUrls || [],
   };
 }
 

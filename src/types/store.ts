@@ -16,7 +16,7 @@ export interface Product {
   costPrice: number;
   sellingPrice: number;
   baseStock: number;
-  imageUrl?: string;
+  imageUrls?: string[];
   variants?: ProductVariant[];
   createdAt: string;
   updatedAt: string;

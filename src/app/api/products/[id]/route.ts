@@ -7,9 +7,52 @@ export async function PUT(
 ) {
   try {
     const supabase = await createClient();
+    
+    // Get authenticated user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's store
+    const { data: storeData, error: storeError } = await supabase
+      .from('stores')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (storeError || !storeData) {
+      return NextResponse.json(
+        { error: 'Store not found' },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
-    const { name, description, category, costPrice, sellingPrice, baseStock, imageUrl, variants } = body;
+    const { name, description, category, costPrice, sellingPrice, baseStock, imageUrls, variants } = body;
+
+    // Verify product belongs to user's store
+    const { data: existingProduct, error: checkError } = await supabase
+      .from('products')
+      .select('store_id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingProduct || existingProduct.store_id !== storeData.id) {
+      return NextResponse.json(
+        { error: 'Product not found or unauthorized' },
+        { status: 404 }
+      );
+    }
+
+    // Ensure imageUrls is an array and limit to 5
+    const imageUrlsArray = Array.isArray(imageUrls) 
+      ? imageUrls.slice(0, 5) 
+      : (imageUrls ? [imageUrls] : []);
 
     // Update product
     const { data: product, error: productError } = await supabase
@@ -21,7 +64,7 @@ export async function PUT(
         cost_price: costPrice,
         selling_price: sellingPrice,
         base_stock: baseStock,
-        image_url: imageUrl,
+        image_urls: imageUrlsArray,
       })
       .eq('id', id)
       .select()
@@ -79,7 +122,45 @@ export async function DELETE(
 ) {
   try {
     const supabase = await createClient();
+    
+    // Get authenticated user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Get user's store
+    const { data: storeData, error: storeError } = await supabase
+      .from('stores')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (storeError || !storeData) {
+      return NextResponse.json(
+        { error: 'Store not found' },
+        { status: 404 }
+      );
+    }
+
     const { id } = await params;
+
+    // Verify product belongs to user's store
+    const { data: existingProduct, error: checkError } = await supabase
+      .from('products')
+      .select('store_id')
+      .eq('id', id)
+      .single();
+
+    if (checkError || !existingProduct || existingProduct.store_id !== storeData.id) {
+      return NextResponse.json(
+        { error: 'Product not found or unauthorized' },
+        { status: 404 }
+      );
+    }
 
     // Delete product (variants will be deleted via CASCADE)
     const { error } = await supabase

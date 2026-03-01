@@ -139,18 +139,61 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
-    const { storeId, storeName, accountDetails } = body;
+    const { 
+      storeId, 
+      storeName, 
+      accountDetails,
+      acceptsDelivery,
+      acceptsPickup,
+      whatsappNumber,
+      address,
+      city,
+      state
+    } = body;
+
+    // Verify the store belongs to the user
+    const { data: storeData, error: storeError } = await supabase
+      .from('stores')
+      .select('id, user_id')
+      .eq('id', storeId)
+      .single();
+
+    if (storeError || !storeData || storeData.user_id !== user.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized or store not found' },
+        { status: 403 }
+      );
+    }
+
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
+    };
+
+    if (storeName !== undefined) updateData.store_name = storeName;
+    if (accountDetails?.bankName !== undefined) updateData.account_bank_name = accountDetails.bankName;
+    if (accountDetails?.accountNumber !== undefined) updateData.account_number = accountDetails.accountNumber;
+    if (accountDetails?.accountName !== undefined) updateData.account_name = accountDetails.accountName;
+    if (accountDetails?.phoneNumber !== undefined) updateData.account_phone = accountDetails.phoneNumber;
+    if (acceptsDelivery !== undefined) updateData.accepts_delivery = acceptsDelivery;
+    if (acceptsPickup !== undefined) updateData.accepts_pickup = acceptsPickup;
+    if (whatsappNumber !== undefined) updateData.whatsapp_number = whatsappNumber;
+    if (address !== undefined) updateData.address = address;
+    if (city !== undefined) updateData.city = city;
+    if (state !== undefined) updateData.state = state;
 
     const { data, error } = await supabase
       .from('stores')
-      .update({
-        store_name: storeName,
-        account_bank_name: accountDetails?.bankName,
-        account_number: accountDetails?.accountNumber,
-        account_name: accountDetails?.accountName,
-        account_phone: accountDetails?.phoneNumber,
-      })
+      .update(updateData)
       .eq('id', storeId)
       .select()
       .single();
