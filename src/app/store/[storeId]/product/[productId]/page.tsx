@@ -11,12 +11,15 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useStoreData } from '@/hooks/use-store-data';
+import { useCart } from '@/contexts/cart-context';
+import Link from 'next/link';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ storeId: string, productId: string }> }) {
   const { storeId, productId } = use(params);
   const router = useRouter();
   const { toast } = useToast();
   const { placeOnlineOrder } = useStoreData();
+  const { addToCart, getItemCount } = useCart();
   
   const [store, setStore] = useState<StoreData | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
@@ -79,6 +82,16 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
           <div className="flex-1">
             <h1 className="font-bold text-primary truncate">{store.storeName}</h1>
           </div>
+          <Link href={`/store/${storeId}/cart`}>
+            <Button variant="outline" size="icon" className="relative">
+              <ShoppingCart className="h-5 w-5" />
+              {getItemCount() > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                  {getItemCount()}
+                </span>
+              )}
+            </Button>
+          </Link>
         </div>
       </header>
 
@@ -156,13 +169,28 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
                   <span className="text-2xl font-black text-primary">₦{(product.sellingPrice * qty).toLocaleString()}</span>
                 </div>
 
-                <Button 
-                  className="w-full h-14 text-lg bg-primary hover:bg-primary/90 rounded-2xl" 
-                  disabled={product.stock === 0}
-                  onClick={() => setIsCheckingOut(true)}
-                >
-                  <ShoppingCart className="mr-2 h-5 w-5" /> Buy Now
-                </Button>
+                <div className="flex gap-3">
+                  <Button 
+                    className="flex-1 h-14 text-lg bg-primary hover:bg-primary/90 rounded-2xl" 
+                    disabled={product.stock === 0}
+                    onClick={() => {
+                      addToCart(product, qty);
+                      toast({
+                        title: "Added to Cart!",
+                        description: `${product.name} has been added to your cart.`,
+                      });
+                    }}
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                  </Button>
+                  <Button 
+                    className="flex-1 h-14 text-lg bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-2xl" 
+                    disabled={product.stock === 0}
+                    onClick={() => setIsCheckingOut(true)}
+                  >
+                    Buy Now
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

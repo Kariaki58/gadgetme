@@ -1,6 +1,6 @@
 "use client";
 
-import { useStoreData } from '@/hooks/use-store-data';
+import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   TrendingUp, 
@@ -25,23 +25,31 @@ import {
 } from 'recharts';
 
 export default function DashboardPage() {
-  const { store } = useStoreData();
+  const { store, orders, posTransactions, loading } = useStoreDataSupabaseAuth();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   if (!store) return null;
 
-  const totalOnlineRevenue = store.orders.reduce((sum, o) => sum + o.totalAmount, 0);
-  const totalInPersonRevenue = store.inPersonSales.reduce((sum, s) => sum + s.actualAmountCollected, 0);
-  const totalRevenue = totalOnlineRevenue + totalInPersonRevenue;
+  const totalOnlineRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const totalPOSRevenue = posTransactions.reduce((sum, t) => sum + t.actualAmountCollected, 0);
+  const totalRevenue = totalOnlineRevenue + totalPOSRevenue;
   
-  const totalProfit = store.inPersonSales.reduce((sum, s) => sum + s.profit, 0);
-  const totalLoss = store.inPersonSales.reduce((sum, s) => sum + s.loss, 0);
-  const totalOvercharge = store.inPersonSales.reduce((sum, s) => sum + s.extraCharge, 0);
+  const totalProfit = posTransactions.reduce((sum, t) => sum + t.profit, 0);
+  const totalLoss = posTransactions.reduce((sum, t) => sum + t.loss, 0);
+  const totalOvercharge = posTransactions.reduce((sum, t) => sum + t.extraCharge, 0);
   
-  const totalOrders = store.orders.length + store.inPersonSales.length;
+  const totalOrders = orders.length + posTransactions.length;
 
   const pieData = [
     { name: 'Online', value: totalOnlineRevenue },
-    { name: 'In-Person', value: totalInPersonRevenue },
+    { name: 'POS', value: totalPOSRevenue },
   ];
 
   const COLORS = ['#6B22CC', '#8989CE'];
@@ -135,7 +143,7 @@ export default function DashboardPage() {
         <Card className="lg:col-span-3 border-primary/10">
           <CardHeader>
             <CardTitle>Revenue Breakdown</CardTitle>
-            <CardDescription>Online vs In-Person Sales</CardDescription>
+            <CardDescription>Online vs POS Sales</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px] flex items-center justify-center">
             {totalRevenue > 0 ? (

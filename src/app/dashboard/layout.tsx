@@ -2,26 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useStoreData } from '@/hooks/use-store-data';
+import { useAuth } from '@/contexts/auth-context';
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar';
 import { Smartphone } from 'lucide-react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { authState } = useStoreData();
+  const { user, loading } = useAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !authState.isLoggedIn) {
+    if (!loading && !user) {
       router.push('/login');
     }
-  }, [authState.isLoggedIn, router, mounted]);
+  }, [user, loading, router]);
 
-  if (!mounted || !authState.isLoggedIn) {
+  if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-bounce">
@@ -29,6 +24,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    return null;
   }
 
   return (

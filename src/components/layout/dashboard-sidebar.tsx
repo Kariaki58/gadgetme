@@ -1,7 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { 
   LayoutDashboard, 
   Package, 
@@ -9,21 +10,33 @@ import {
   CircleDollarSign, 
   ExternalLink,
   LogOut,
-  Smartphone
+  Smartphone,
+  Receipt,
+  ScanLine
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useStoreData } from '@/hooks/use-store-data';
+import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 export function DashboardSidebar() {
   const pathname = usePathname();
-  const { logout, store } = useStoreData();
+  const { store } = useStoreDataSupabaseAuth();
+  const { user } = useAuth();
+  const supabase = createClient();
+  const router = useRouter();
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'POS System', href: '/dashboard/pos', icon: ScanLine },
     { name: 'Products', href: '/dashboard/products', icon: Package },
-    { name: 'In-Person Sales', href: '/dashboard/sales', icon: CircleDollarSign },
+    { name: 'Orders', href: '/dashboard/orders', icon: Receipt },
   ];
 
   return (
@@ -31,7 +44,7 @@ export function DashboardSidebar() {
       <div className="p-6">
         <Link href="/dashboard" className="flex items-center gap-2 text-primary">
           <Smartphone className="h-6 w-6" />
-          <span className="text-xl font-bold">StoreStack</span>
+          <span className="text-xl font-bold">GadgetMe</span>
         </Link>
       </div>
       
@@ -77,7 +90,7 @@ export function DashboardSidebar() {
         <Button 
           variant="ghost" 
           size="sm" 
-          onClick={logout}
+          onClick={signOut}
           className="w-full flex justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
         >
           <LogOut className="h-4 w-4" />
