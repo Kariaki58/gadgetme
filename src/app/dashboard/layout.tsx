@@ -5,10 +5,22 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { DashboardSidebar } from '@/components/layout/dashboard-sidebar';
 import { Smartphone } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  // Auto-close sidebar on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  }, [isMobile]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,8 +44,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex">
-      <DashboardSidebar />
-      <main className="flex-1 ml-64 min-h-screen bg-background p-8">
+      <DashboardSidebar 
+        isOpen={sidebarOpen} 
+        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        isMobile={isMobile}
+      />
+      <main className={`flex-1 min-h-screen bg-background p-8 transition-all duration-300 ${
+        isMobile ? 'ml-0' : (sidebarOpen ? 'ml-64' : 'ml-0')
+      }`}>
         <div className="max-w-7xl mx-auto">
           {children}
         </div>

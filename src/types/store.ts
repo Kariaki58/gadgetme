@@ -24,6 +24,7 @@ export interface Product {
 
 export interface CartItem {
   productId: string;
+  variantId?: string; // Optional variant ID for color variants
   quantity: number;
   price: number; // Price at time of order
 }

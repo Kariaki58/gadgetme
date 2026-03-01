@@ -1,9 +1,14 @@
+"use client";
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight } from 'lucide-react';
+import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight, LayoutDashboard } from 'lucide-react';
+import { useAuth } from '@/contexts/auth-context';
 
 export default function Home() {
+  const { user, loading } = useAuth();
+  const isAuthenticated = !!user;
   return (
     <div className="flex flex-col min-h-screen">
       <header className="px-4 lg:px-6 h-20 flex items-center border-b bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
@@ -20,12 +25,23 @@ export default function Home() {
           {/* <span className="text-2xl font-bold tracking-tight text-primary">Karigad</span> */}
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
-          <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
-            Login
-          </Link>
-          <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
-            <Link href="/signup">Get Started</Link>
-          </Button>
+          {isAuthenticated ? (
+            <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
+              <Link href="/dashboard" className="flex items-center gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Link>
+            </Button>
+          ) : (
+            <>
+              <Link className="text-sm font-medium hover:text-primary transition-colors" href="/login">
+                Login
+              </Link>
+              <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
+                <Link href="/signup">Get Started</Link>
+              </Button>
+            </>
+          )}
         </nav>
       </header>
       <main className="flex-1">
@@ -48,15 +64,27 @@ export default function Home() {
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-                <Button asChild size="lg" className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
-                  <Link href="/signup" className="flex items-center gap-2">
-                    Get Started Free
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-2 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all">
-                  <Link href="/login">Sign In</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <Button asChild size="lg" className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <LayoutDashboard className="h-5 w-5" />
+                      Go to Dashboard
+                      <ArrowRight className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild size="lg" className="px-8 py-6 text-lg bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all">
+                      <Link href="/signup" className="flex items-center gap-2">
+                        Get Started Free
+                        <ArrowRight className="h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-2 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary/50 transition-all">
+                      <Link href="/login">Sign In</Link>
+                    </Button>
+                  </>
+                )}
               </div>
               <div className="flex items-center gap-8 pt-8 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
@@ -157,15 +185,27 @@ export default function Home() {
                 Join hundreds of Nigerian retailers who are already using Karigad to manage their stores and reach more customers.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center justify-center pt-4">
-                <Button asChild size="lg" className="px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 shadow-xl">
-                  <Link href="/signup" className="flex items-center gap-2">
-                    Start Free Trial
-                    <ArrowRight className="h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-2 border-white text-white hover:bg-white/10">
-                  <Link href="/login">Sign In</Link>
-                </Button>
+                {isAuthenticated ? (
+                  <Button asChild size="lg" className="px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 shadow-xl">
+                    <Link href="/dashboard" className="flex items-center gap-2">
+                      <LayoutDashboard className="h-5 w-5" />
+                      Go to Dashboard
+                      <ArrowRight className="h-5 w-5" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button asChild size="lg" className="px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 shadow-xl">
+                      <Link href="/signup" className="flex items-center gap-2">
+                        Start Free Trial
+                        <ArrowRight className="h-5 w-5" />
+                      </Link>
+                    </Button>
+                    <Button variant="outline" size="lg" className="px-8 py-6 text-lg border-2 border-white text-white hover:bg-white/10">
+                      <Link href="/login">Sign In</Link>
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </div>
