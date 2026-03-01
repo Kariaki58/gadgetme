@@ -54,6 +54,7 @@ export interface POSTransaction {
   extraCharge: number;
   profit: number;
   loss: number;
+  paymentMethod?: 'cash' | 'transfer';
   createdAt: string;
 }
 

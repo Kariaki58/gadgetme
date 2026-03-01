@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
       extraCharge,
       profit,
       loss,
+      paymentMethod = 'cash',
     } = body;
 
     // Create transaction
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest) {
         extra_charge: extraCharge,
         profit,
         loss,
+        payment_method: paymentMethod,
       })
       .select()
       .single();

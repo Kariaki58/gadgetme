@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from 'react';
 import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
@@ -9,7 +10,9 @@ import {
   Package, 
   AlertTriangle,
   ShoppingCart,
-  Zap
+  Zap,
+  Wallet,
+  ArrowLeftRight
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -23,9 +26,50 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { QRCodeCard } from '@/components/qr-code-card';
+
+type TimeFilter = 'today' | '7days' | '30days' | 'all';
 
 export default function DashboardPage() {
   const { store, orders, posTransactions, loading } = useStoreDataSupabaseAuth();
+  const [timeFilter, setTimeFilter] = useState<TimeFilter>('today');
+
+  // Filter data based on time filter - MUST be called before any conditional returns
+  const getFilteredData = useMemo(() => {
+    if (!orders || !posTransactions) {
+      return { filteredOrders: [], filteredTransactions: [] };
+    }
+    
+    const now = new Date();
+    let startDate: Date;
+
+    switch (timeFilter) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case '7days':
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case '30days':
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        startDate = new Date(0); // All time
+    }
+
+    const filteredOrders = orders.filter(order => {
+      const orderDate = new Date(order.createdAt);
+      return orderDate >= startDate;
+    });
+
+    const filteredTransactions = posTransactions.filter(transaction => {
+      const transactionDate = new Date(transaction.createdAt);
+      return transactionDate >= startDate;
+    });
+
+    return { filteredOrders, filteredTransactions };
+  }, [orders, posTransactions, timeFilter]);
 
   if (loading) {
     return (
@@ -37,37 +81,130 @@ export default function DashboardPage() {
 
   if (!store) return null;
 
-  const totalOnlineRevenue = orders.reduce((sum, o) => sum + o.totalAmount, 0);
-  const totalPOSRevenue = posTransactions.reduce((sum, t) => sum + t.actualAmountCollected, 0);
+  const { filteredOrders, filteredTransactions } = getFilteredData;
+
+  const totalOnlineRevenue = filteredOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const totalPOSRevenue = filteredTransactions.reduce((sum, t) => sum + t.actualAmountCollected, 0);
   const totalRevenue = totalOnlineRevenue + totalPOSRevenue;
   
-  const totalProfit = posTransactions.reduce((sum, t) => sum + t.profit, 0);
-  const totalLoss = posTransactions.reduce((sum, t) => sum + t.loss, 0);
-  const totalOvercharge = posTransactions.reduce((sum, t) => sum + t.extraCharge, 0);
+  const totalProfit = filteredTransactions.reduce((sum, t) => sum + t.profit, 0);
+  const totalLoss = filteredTransactions.reduce((sum, t) => sum + t.loss, 0);
+  const totalOvercharge = filteredTransactions.reduce((sum, t) => sum + t.extraCharge, 0);
   
-  const totalOrders = orders.length + posTransactions.length;
+  const totalOrders = filteredOrders.length + filteredTransactions.length;
+
+  // Cash vs Transfer breakdown
+  const cashTransactions = filteredTransactions.filter(t => t.paymentMethod === 'cash' || !t.paymentMethod);
+  const transferTransactions = filteredTransactions.filter(t => t.paymentMethod === 'transfer');
+  
+  const cashRevenue = cashTransactions.reduce((sum, t) => sum + t.actualAmountCollected, 0);
+  const transferRevenue = transferTransactions.reduce((sum, t) => sum + t.actualAmountCollected, 0);
 
   const pieData = [
     { name: 'Online', value: totalOnlineRevenue },
     { name: 'POS', value: totalPOSRevenue },
   ];
 
-  const COLORS = ['#6B22CC', '#8989CE'];
-
-  // Mock monthly revenue data based on current total
-  const barData = [
-    { name: 'Jan', revenue: totalRevenue * 0.1 },
-    { name: 'Feb', revenue: totalRevenue * 0.15 },
-    { name: 'Mar', revenue: totalRevenue * 0.2 },
-    { name: 'Apr', revenue: totalRevenue * 0.25 },
-    { name: 'May', revenue: totalRevenue * 0.3 },
+  const paymentMethodData = [
+    { name: 'Cash', value: cashRevenue },
+    { name: 'Transfer', value: transferRevenue },
   ];
+
+  const COLORS = ['#6B22CC', '#8989CE'];
+  const PAYMENT_COLORS = ['#6B22CC', '#3B82F6'];
+
+  // Generate bar chart data based on filtered transactions
+  const generateBarData = () => {
+    const days = timeFilter === 'today' ? 1 : timeFilter === '7days' ? 7 : timeFilter === '30days' ? 30 : 12;
+    const data: { name: string; revenue: number; cash: number; transfer: number }[] = [];
+    
+    const now = new Date();
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      if (timeFilter === 'all') {
+        // For all time, show months
+        date.setMonth(date.getMonth() - i);
+        const monthName = date.toLocaleString('default', { month: 'short' });
+        const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+        const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const monthRevenue = filteredTransactions
+          .filter(t => {
+            const tDate = new Date(t.createdAt);
+            return tDate >= monthStart && tDate <= monthEnd;
+          })
+          .reduce((sum, t) => sum + t.actualAmountCollected, 0);
+        
+        const monthCash = filteredTransactions
+          .filter(t => {
+            const tDate = new Date(t.createdAt);
+            return tDate >= monthStart && tDate <= monthEnd && (t.paymentMethod === 'cash' || !t.paymentMethod);
+          })
+          .reduce((sum, t) => sum + t.actualAmountCollected, 0);
+        
+        const monthTransfer = filteredTransactions
+          .filter(t => {
+            const tDate = new Date(t.createdAt);
+            return tDate >= monthStart && tDate <= monthEnd && t.paymentMethod === 'transfer';
+          })
+          .reduce((sum, t) => sum + t.actualAmountCollected, 0);
+        
+        data.push({ name: monthName, revenue: monthRevenue, cash: monthCash, transfer: monthTransfer });
+      } else {
+        // For day/week/month, show days
+        date.setDate(date.getDate() - i);
+        const dayName = date.toLocaleDateString('default', { month: 'short', day: 'numeric' });
+        const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const dayEnd = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+        
+        const dayRevenue = filteredTransactions
+          .filter(t => {
+            const tDate = new Date(t.createdAt);
+            return tDate >= dayStart && tDate <= dayEnd;
+          })
+          .reduce((sum, t) => sum + t.actualAmountCollected, 0);
+        
+        const dayCash = filteredTransactions
+          .filter(t => {
+            const tDate = new Date(t.createdAt);
+            return tDate >= dayStart && tDate <= dayEnd && (t.paymentMethod === 'cash' || !t.paymentMethod);
+          })
+          .reduce((sum, t) => sum + t.actualAmountCollected, 0);
+        
+        const dayTransfer = filteredTransactions
+          .filter(t => {
+            const tDate = new Date(t.createdAt);
+            return tDate >= dayStart && tDate <= dayEnd && t.paymentMethod === 'transfer';
+          })
+          .reduce((sum, t) => sum + t.actualAmountCollected, 0);
+        
+        data.push({ name: dayName, revenue: dayRevenue, cash: dayCash, transfer: dayTransfer });
+      }
+    }
+    
+    return data;
+  };
+
+  const barData = generateBarData();
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-primary">Welcome back, {store.storeName}</h1>
-        <p className="text-muted-foreground">Here's what's happening in your business today.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-primary">Welcome back, {store.storeName}</h1>
+          <p className="text-muted-foreground">Here's what's happening in your business.</p>
+        </div>
+        <Select value={timeFilter} onValueChange={(value: TimeFilter) => setTimeFilter(value)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="today">Today</SelectItem>
+            <SelectItem value="7days">Last 7 Days</SelectItem>
+            <SelectItem value="30days">Last 30 Days</SelectItem>
+            <SelectItem value="all">All Time</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -118,11 +255,35 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Cash Payments</CardTitle>
+            <Wallet className="h-4 w-4 text-primary" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₦{cashRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">{cashTransactions.length} transactions</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-primary/10 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Transfer Payments</CardTitle>
+            <ArrowLeftRight className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">₦{transferRevenue.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground mt-1">{transferTransactions.length} transactions</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4 border-primary/10">
           <CardHeader>
             <CardTitle>Revenue Over Time</CardTitle>
-            <CardDescription>Simulated monthly growth based on your data</CardDescription>
+            <CardDescription>POS revenue breakdown by payment method</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
@@ -134,7 +295,8 @@ export default function DashboardPage() {
                   contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                   formatter={(value: any) => [`₦${value.toLocaleString()}`, 'Revenue']}
                 />
-                <Bar dataKey="revenue" fill="#6B22CC" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="cash" fill="#6B22CC" radius={[4, 4, 0, 0]} name="Cash" />
+                <Bar dataKey="transfer" fill="#3B82F6" radius={[4, 4, 0, 0]} name="Transfer" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -142,15 +304,15 @@ export default function DashboardPage() {
 
         <Card className="lg:col-span-3 border-primary/10">
           <CardHeader>
-            <CardTitle>Revenue Breakdown</CardTitle>
-            <CardDescription>Online vs POS Sales</CardDescription>
+            <CardTitle>Payment Method Breakdown</CardTitle>
+            <CardDescription>Cash vs Transfer (POS Only)</CardDescription>
           </CardHeader>
           <CardContent className="h-[300px] flex items-center justify-center">
-            {totalRevenue > 0 ? (
+            {totalPOSRevenue > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={pieData}
+                    data={paymentMethodData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -158,19 +320,28 @@ export default function DashboardPage() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    {paymentMethodData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={PAYMENT_COLORS[index % PAYMENT_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip 
+                    formatter={(value: any) => [`₦${value.toLocaleString()}`, 'Revenue']}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-muted-foreground text-sm italic">No data to display</div>
+              <div className="text-muted-foreground text-sm italic">No POS transactions to display</div>
             )}
           </CardContent>
         </Card>
       </div>
+
+      {/* QR Code Section */}
+      {store?.storeId && (
+        <div className="grid gap-6 md:grid-cols-2">
+          <QRCodeCard storeId={store.storeId} storeName={store.storeName} />
+        </div>
+      )}
     </div>
   );
 }

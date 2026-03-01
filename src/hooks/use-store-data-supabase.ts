@@ -97,7 +97,8 @@ export function useStoreDataSupabase() {
     actualAmountCollected: number,
     extraCharge: number,
     profit: number,
-    loss: number
+    loss: number,
+    paymentMethod: 'cash' | 'transfer' = 'cash'
   ): Promise<boolean> => {
     if (!store) return false;
 
@@ -114,6 +115,7 @@ export function useStoreDataSupabase() {
           extraCharge,
           profit,
           loss,
+          paymentMethod,
         }),
       });
 

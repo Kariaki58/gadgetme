@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from 'react';
-import { ShoppingCart, Plus, Minus, Trash2, UserPlus, X, CreditCard, Smartphone } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Trash2, UserPlus, X, CreditCard, Smartphone, Wallet, ArrowLeftRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -42,6 +42,7 @@ export default function POSPage() {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [actualAmountCollected, setActualAmountCollected] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'transfer'>('cash');
   const { user } = useAuth();
   const { store, products: storeProducts, loading, loadStoreData, addPOSTransaction } = useStoreDataSupabase();
   
@@ -230,6 +231,8 @@ export default function POSPage() {
       return;
     }
     
+    setIsProcessingPayment(true);
+    
     const expectedAmount = getCartTotal(activeCustomer.items);
     const actualAmount = parseFloat(actualAmountCollected) || expectedAmount;
     
@@ -252,7 +255,8 @@ export default function POSPage() {
       actualAmount,
       extraCharge,
       profit,
-      loss
+      loss,
+      paymentMethod
     );
 
     if (success) {
@@ -270,6 +274,8 @@ export default function POSPage() {
       );
       setShowPaymentModal(false);
       setActualAmountCollected('');
+      setPaymentMethod('cash');
+      setIsProcessingPayment(false);
     } else {
       // More detailed error message
       const missingProducts = activeCustomer.items.filter(item => {
@@ -294,8 +300,9 @@ export default function POSPage() {
           variant: "destructive"
         });
       }
+      setIsProcessingPayment(false);
     }
-  }, [activeCustomer, activeCustomerId, actualAmountCollected, getCartTotal, addPOSTransaction, toast, store, storeProducts]);
+  }, [activeCustomer, activeCustomerId, actualAmountCollected, paymentMethod, getCartTotal, addPOSTransaction, toast, store, storeProducts]);
 
   const activeCartTotal = activeCustomer ? getCartTotal(activeCustomer.items) : 0;
   const activeCartItemCount = activeCustomer ? getCartItemCount(activeCustomer.items) : 0;
@@ -596,6 +603,31 @@ export default function POSPage() {
                       autoFocus
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Payment Method</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        type="button"
+                        variant={paymentMethod === 'cash' ? 'default' : 'outline'}
+                        className={`h-12 ${paymentMethod === 'cash' ? 'bg-primary' : ''}`}
+                        onClick={() => setPaymentMethod('cash')}
+                        disabled={isProcessingPayment}
+                      >
+                        <Wallet className="mr-2 h-4 w-4" />
+                        Cash
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={paymentMethod === 'transfer' ? 'default' : 'outline'}
+                        className={`h-12 ${paymentMethod === 'transfer' ? 'bg-primary' : ''}`}
+                        onClick={() => setPaymentMethod('transfer')}
+                        disabled={isProcessingPayment}
+                      >
+                        <ArrowLeftRight className="mr-2 h-4 w-4" />
+                        Transfer
+                      </Button>
+                    </div>
+                  </div>
                   {actualAmountCollected && parseFloat(actualAmountCollected) > 0 && (
                     <div className="pt-2 border-t border-primary/10 space-y-2">
                       <p className="text-xs text-muted-foreground italic">
@@ -623,16 +655,28 @@ export default function POSPage() {
                     onClick={() => {
                       setShowPaymentModal(false);
                       setActualAmountCollected('');
+                      setPaymentMethod('cash');
                     }}
+                    disabled={isProcessingPayment}
                   >
                     Cancel
                   </Button>
                   <Button
                     className="flex-1 bg-primary"
                     onClick={handleConfirmPayment}
+                    disabled={isProcessingPayment}
                   >
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Confirm Payment
+                    {isProcessingPayment ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Confirm Payment
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>

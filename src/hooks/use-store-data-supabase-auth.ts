@@ -119,6 +119,10 @@ export function useStoreDataSupabaseAuth() {
           createdAt: order.created_at,
           paymentConfirmedAt: order.payment_confirmed_at,
           notes: order.notes,
+          deliveryAddress: order.delivery_address,
+          deliveryCity: order.delivery_city,
+          deliveryState: order.delivery_state,
+          deliveryCountry: order.delivery_country,
           items: order.order_items?.map((item: any) => ({
             productId: item.product_id,
             variantId: item.variant_id,
@@ -150,6 +154,7 @@ export function useStoreDataSupabaseAuth() {
           extraCharge: parseFloat(transaction.extra_charge),
           profit: parseFloat(transaction.profit),
           loss: parseFloat(transaction.loss),
+          paymentMethod: transaction.payment_method || 'cash',
           createdAt: transaction.created_at,
           items: transaction.pos_transaction_items?.map((item: any) => ({
             productId: item.product_id,
@@ -200,6 +205,7 @@ export function useStoreDataSupabaseAuth() {
     loading,
     loadStoreData,
     updateAccountDetails,
+    refetchOrders: loadStoreData,
   };
 }
 

@@ -606,20 +606,6 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                     </Button>
                   </div>
                 </form>
-
-                {/* Payment Completed Section */}
-                {checkoutForm.name && checkoutForm.phone && checkoutForm.address && checkoutForm.city && checkoutForm.state && checkoutForm.country && (
-                  <div className="pt-6 border-t space-y-4">
-                    <Button
-                      type="button"
-                      className="w-full h-12 bg-green-600 hover:bg-green-700 rounded-xl"
-                      onClick={handlePaymentCompleted}
-                    >
-                      <Check className="mr-2 h-5 w-5" />
-                      I Have Completed Payment
-                    </Button>
-                  </div>
-                )}
               </>
             ) : (
               <div className="space-y-6">

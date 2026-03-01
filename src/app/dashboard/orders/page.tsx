@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { useStoreData } from '@/hooks/use-store-data';
+import { useState, useEffect } from 'react';
+import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
@@ -21,74 +21,139 @@ import {
   ShoppingCart,
   User,
   Phone,
-  DollarSign
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Order } from '@/types/store';
 
 export default function OrdersPage() {
-  const { store, confirmPayment, updateOrderStatus } = useStoreData();
+  const { store, orders, products, loading, refetchOrders } = useStoreDataSupabaseAuth();
   const { toast } = useToast();
+  const [updatingOrders, setUpdatingOrders] = useState<Set<string>>(new Set());
+  const [optimisticOrders, setOptimisticOrders] = useState<Order[]>(orders);
+  
+  // Sync optimistic orders with actual orders when they change
+  useEffect(() => {
+    setOptimisticOrders(orders);
+  }, [orders]);
 
-  if (!store) return null;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center space-y-4">
+          <Package className="h-12 w-12 text-primary mx-auto animate-pulse" />
+          <h1 className="text-2xl font-bold">Loading orders...</h1>
+        </div>
+      </div>
+    );
+  }
 
-  // Filter cart orders and pending payment orders
-  const cartOrders = store.orders.filter(o => o.type === 'cart');
+  if (!store) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center space-y-4">
+          <Package className="h-12 w-12 text-muted-foreground mx-auto" />
+          <h1 className="text-2xl font-bold">Store not found</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // Filter cart orders and pending payment orders (use optimistic orders)
+  const cartOrders = optimisticOrders.filter(o => o.type === 'cart');
   const pendingOrders = cartOrders.filter(o => o.paymentStatus === 'pending');
-  const paidOrders = cartOrders.filter(o => o.paymentStatus === 'paid');
+  const paidOrders = cartOrders.filter(o => o.paymentStatus === 'paid' || o.paymentStatus === 'confirmed');
 
-  const handleConfirmPayment = (orderId: string) => {
-    const success = confirmPayment(orderId);
-    if (success) {
+  const handleConfirmPayment = async (orderId: string) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}/confirm`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to confirm payment');
+      }
+
+      // Optimistic update after successful API call
+      setOptimisticOrders(prev => 
+        prev.map(order => 
+          order.id === orderId 
+            ? { ...order, paymentStatus: 'confirmed' as const, paymentConfirmedAt: new Date().toISOString() }
+            : order
+        )
+      );
+      
       toast({
         title: "Payment Confirmed",
-        description: "Order stock has been updated and payment is confirmed.",
+        description: "Order payment has been confirmed and stock updated.",
       });
-    } else {
+    } catch (error) {
+      console.error('Error confirming payment:', error);
+      
       toast({
         title: "Error",
         description: "Failed to confirm payment. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setUpdatingOrders(prev => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
     }
   };
 
-  const handleStatusUpdate = (orderId: string, newStatus: Order['orderStatus']) => {
-    const success = updateOrderStatus(orderId, newStatus);
-    if (success) {
+  const handleStatusUpdate = async (orderId: string, newStatus: Order['orderStatus']) => {
+    setUpdatingOrders(prev => new Set(prev).add(orderId));
+
+    try {
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderStatus: newStatus }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      // Optimistic update after successful API call
+      setOptimisticOrders(prev => 
+        prev.map(order => 
+          order.id === orderId ? { ...order, orderStatus: newStatus } : order
+        )
+      );
+      
       toast({
         title: "Status Updated",
         description: `Order status updated to ${newStatus}.`,
       });
-    } else {
+    } catch (error) {
+      console.error('Error updating status:', error);
+      
       toast({
         title: "Error",
         description: "Failed to update status. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setUpdatingOrders(prev => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
     }
-  };
-
-  const getProductName = (order: Order) => {
-    if (order.items && order.items.length > 0) {
-      const product = store.products.find(p => p.id === order.items![0].productId);
-      if (product) {
-        return order.items.length === 1 
-          ? product.name 
-          : `${product.name} and ${order.items.length - 1} more`;
-      }
-    }
-    if (order.productId) {
-      const product = store.products.find(p => p.id === order.productId);
-      return product?.name || 'Unknown Product';
-    }
-    return 'Unknown Product';
   };
 
   const getOrderItems = (order: Order) => {
     if (order.items && order.items.length > 0) {
       return order.items.map(item => {
-        const product = store.products.find(p => p.id === item.productId);
+        const product = products.find(p => p.id === item.productId);
         return { product, quantity: item.quantity, price: item.price };
       }).filter(item => item.product);
     }
@@ -183,6 +248,14 @@ export default function OrdersPage() {
                               <Phone className="h-4 w-4 text-muted-foreground" />
                               <span>{order.customerPhone}</span>
                             </div>
+                            {(order as any).deliveryAddress && (
+                              <div className="text-sm text-muted-foreground pt-2 border-t">
+                                <p className="font-medium mb-1">Delivery Address:</p>
+                                <p>{(order as any).deliveryAddress}</p>
+                                <p>{(order as any).deliveryCity}, {(order as any).deliveryState}</p>
+                                <p>{(order as any).deliveryCountry}</p>
+                              </div>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <p className="text-sm font-medium">Items:</p>
@@ -199,9 +272,18 @@ export default function OrdersPage() {
                         <div className="flex gap-3 pt-4 border-t">
                           <Button
                             onClick={() => handleConfirmPayment(order.id)}
+                            disabled={updatingOrders.has(order.id)}
                             className="bg-green-600 hover:bg-green-700"
                           >
-                            <CheckCircle2 className="mr-2 h-4 w-4" /> Confirm Payment
+                            {updatingOrders.has(order.id) ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Confirming...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="mr-2 h-4 w-4" /> Confirm Payment
+                              </>
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -264,20 +346,26 @@ export default function OrdersPage() {
                         </TableCell>
                         <TableCell className="font-bold">₦{order.totalAmount.toLocaleString()}</TableCell>
                         <TableCell>
-                          <Select
-                            value={order.orderStatus}
-                            onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
-                          >
-                            <SelectTrigger className="w-40">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="packaged">Packaged</SelectItem>
-                              <SelectItem value="shipped">Shipped</SelectItem>
-                              <SelectItem value="delivered">Delivered</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex items-center gap-2">
+                            {updatingOrders.has(order.id) && (
+                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            )}
+                            <Select
+                              value={order.orderStatus}
+                              onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
+                              disabled={updatingOrders.has(order.id)}
+                            >
+                              <SelectTrigger className="w-40 disabled:opacity-50">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="paid">Paid</SelectItem>
+                                <SelectItem value="packaged">Packaged</SelectItem>
+                                <SelectItem value="shipped">Shipped</SelectItem>
+                                <SelectItem value="delivered">Delivered</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
