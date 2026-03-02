@@ -93,7 +93,7 @@ export default function Home() {
                   <span className="text-sm font-medium text-primary">Powerful E-Commerce Platform</span>
                 </div>
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  Your Store, Your Way
+                  Stop Managing Your Gadget Business the Hard Way
                 </h1>
                 <p className="mx-auto max-w-[700px] text-lg md:text-xl text-muted-foreground leading-relaxed">
                   Manage your inventory, track sales, and generate beautiful public catalogs with zero effort. 
