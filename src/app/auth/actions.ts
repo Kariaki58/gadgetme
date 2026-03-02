@@ -35,6 +35,7 @@ export async function signup(prevState: any, formData: FormData) {
   const storeName = formData.get('storeName') as string;
   const fullName = formData.get('fullName') as string;
   const phone = formData.get('phone') as string;
+  const referralCode = (formData.get('referralCode') as string)?.toUpperCase().trim() || null;
 
   const supabase = await createClient();
 
@@ -97,18 +98,74 @@ export async function signup(prevState: any, formData: FormData) {
       storeId = generateStoreId();
     }
 
-    const { error: storeError } = await adminClient
+    const { data: storeData, error: storeError } = await adminClient
       .from('stores')
       .insert({
         user_id: authData.user.id,
         store_id: storeId,
         store_name: storeName,
         owner_email: email,
-      });
+      })
+      .select()
+      .single();
 
     if (storeError) {
       console.error('[AUTH ACTIONS] Store creation error:', storeError);
       return { error: 'Account created, but failed to initialize store.' };
+    }
+
+    // Create referral code for the new user
+    const generateReferralCode = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let result = '';
+      for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
+
+    let refCode = generateReferralCode();
+    let attempts = 0;
+    while (attempts < 10) {
+      const { data: existing } = await adminClient
+        .from('referral_codes')
+        .select('id')
+        .eq('code', refCode)
+        .maybeSingle();
+      
+      if (!existing) break;
+      refCode = generateReferralCode();
+      attempts++;
+    }
+
+    // Create referral code for new user (they are a vendor)
+    await adminClient
+      .from('referral_codes')
+      .insert({
+        user_id: authData.user.id,
+        code: refCode,
+        is_vendor: true,
+      });
+
+    // Track referral if code was provided
+    if (referralCode) {
+      const { data: referrerCode } = await adminClient
+        .from('referral_codes')
+        .select('user_id')
+        .eq('code', referralCode)
+        .maybeSingle();
+
+      if (referrerCode && referrerCode.user_id !== authData.user.id) {
+        // Record the referral
+        await adminClient
+          .from('referral_registrations')
+          .insert({
+            referrer_user_id: referrerCode.user_id,
+            referred_user_id: authData.user.id,
+            referral_code: referralCode,
+            referred_store_id: storeData.id,
+          });
+      }
     }
 
   } catch (err) {

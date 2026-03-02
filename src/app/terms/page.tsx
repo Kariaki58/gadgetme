@@ -68,9 +68,9 @@ export default function TermsPage() {
               GadgetMe offers a 14-day free trial period. After the trial period, you will be required to subscribe to a monthly 
               (₦20,000) or yearly (₦200,000) plan to continue using the service. All payments are processed securely through Flutterwave.
             </p>
-            <p className="text-muted-foreground leading-relaxed mt-4">
+            {/* <p className="text-muted-foreground leading-relaxed mt-4">
               Subscriptions automatically renew unless cancelled. You may cancel your subscription at any time through your account settings.
-            </p>
+            </p> */}
           </section>
 
           <section>

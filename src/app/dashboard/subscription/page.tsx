@@ -395,7 +395,7 @@ export default function SubscriptionPage() {
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>• All payments are processed securely through Flutterwave</p>
             <p>• Your payment information is encrypted and secure</p>
-            <p>• Subscriptions automatically renew unless cancelled</p>
+            {/* <p>• Subscriptions automatically renew unless cancelled</p> */}
             <p>• You can manage your subscription at any time</p>
           </div>
         </CardContent>

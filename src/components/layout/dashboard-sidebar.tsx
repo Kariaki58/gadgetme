@@ -16,7 +16,8 @@ import {
   Settings,
   BarChart3,
   Menu,
-  X
+  X,
+  Gift
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
@@ -56,6 +57,7 @@ export function DashboardSidebar({ isOpen, onToggle, isMobile = false }: Dashboa
     { name: 'Products', href: '/dashboard/products', icon: Package },
     { name: 'Orders', href: '/dashboard/orders', icon: Receipt },
     { name: 'Subscription', href: '/dashboard/subscription', icon: CircleDollarSign },
+    { name: 'Referrals', href: '/referral', icon: Gift },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 

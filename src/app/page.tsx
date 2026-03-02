@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight, LayoutDashboard, CreditCard, AlertCircle, X, DollarSign, Package, FileText, Globe, Eye, Star } from 'lucide-react';
+import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight, LayoutDashboard, CreditCard, AlertCircle, X, DollarSign, Package, FileText, Globe, Eye, Star, Gift, Copy, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function Home() {
@@ -975,6 +975,91 @@ export default function Home() {
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     "Best investment I made for my business. The 14-day free trial let me test everything. Now I can't imagine running my store without it. My revenue tracking, inventory, everything is perfect!"
                   </p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Referral Section */}
+        <section className="w-full py-20 md:py-28 bg-gradient-to-br from-primary/10 via-background to-primary/5">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center space-y-4 mb-12">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                  <Gift className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-medium text-primary">Referral Program</span>
+                </div>
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                  Earn ₦5,000 Per Referral
+                </h2>
+                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Share Karigad with others and earn money when they subscribe after their free trial
+                </p>
+              </div>
+
+              <Card className="border-primary/20 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl">How It Works</CardTitle>
+                  <CardDescription>Start earning today with our simple referral program</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-3">
+                    <div className="text-center space-y-2">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                        <span className="text-2xl font-bold text-primary">1</span>
+                      </div>
+                      <h3 className="font-semibold">Share Your Link</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Get your unique referral link and share it with friends
+                      </p>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                        <span className="text-2xl font-bold text-primary">2</span>
+                      </div>
+                      <h3 className="font-semibold">They Sign Up</h3>
+                      <p className="text-sm text-muted-foreground">
+                        They get a 14-day free trial to test the platform
+                      </p>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                        <span className="text-2xl font-bold text-primary">3</span>
+                      </div>
+                      <h3 className="font-semibold">You Earn</h3>
+                      <p className="text-sm text-muted-foreground">
+                        When they pay after trial, you earn ₦5,000!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-6 border-t">
+                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                      {isAuthenticated ? (
+                        <Button asChild size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
+                          <Link href="/referral" className="flex items-center gap-2">
+                            <Gift className="h-5 w-5" />
+                            View My Referrals
+                            <ArrowRight className="h-5 w-5" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <>
+                          <Button asChild size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90">
+                            <Link href="/signup" className="flex items-center gap-2">
+                              <Gift className="h-5 w-5" />
+                              Get Started & Earn
+                              <ArrowRight className="h-5 w-5" />
+                            </Link>
+                          </Button>
+                          <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                            <Link href="/referral">Learn More</Link>
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

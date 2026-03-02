@@ -31,6 +31,7 @@ const formSchema = z.object({
   phone: z.string().regex(/^\+?[0-9\s\-()]{10,}$/, 'Please enter a valid phone number'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirmPassword: z.string(),
+  referralCode: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
@@ -85,8 +86,17 @@ function SignupForm() {
       phone: '',
       password: '',
       confirmPassword: '',
+      referralCode: '',
     },
   });
+
+  // Read referral code from URL
+  useEffect(() => {
+    const refCode = searchParams.get('ref');
+    if (refCode) {
+      form.setValue('referralCode', refCode.toUpperCase());
+    }
+  }, [searchParams, form]);
 
   const onSubmit = async (values: FormValues) => {
     const formData = new FormData();
@@ -208,6 +218,24 @@ function SignupForm() {
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
                         <Input type="password" placeholder="••••••••" {...field} className="focus-visible:ring-primary" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="referralCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Referral Code (Optional)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="ABC12345" 
+                          {...field} 
+                          className="focus-visible:ring-primary uppercase" 
+                          onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

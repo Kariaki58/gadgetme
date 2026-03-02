@@ -168,6 +168,52 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check for referral and create earnings if applicable
+    try {
+      const { data: subscription } = await adminSupabase
+        .from('subscriptions')
+        .select('user_id, store_id')
+        .eq('id', subscription_id)
+        .single();
+
+      if (subscription) {
+        // Check if this user was referred
+        const { data: referralReg } = await adminSupabase
+          .from('referral_registrations')
+          .select('id, referrer_user_id')
+          .eq('referred_user_id', subscription.user_id)
+          .maybeSingle();
+
+        if (referralReg) {
+          // Check if earnings already exist for this referral
+          const { data: existingEarnings } = await adminSupabase
+            .from('referral_earnings')
+            .select('id')
+            .eq('referral_registration_id', referralReg.id)
+            .maybeSingle();
+
+          if (!existingEarnings) {
+            // Create referral earnings (₦5,000)
+            await adminSupabase
+              .from('referral_earnings')
+              .insert({
+                referrer_user_id: referralReg.referrer_user_id,
+                referred_user_id: subscription.user_id,
+                referral_registration_id: referralReg.id,
+                subscription_id: subscription_id,
+                amount: 5000.00,
+                status: 'pending',
+              });
+            
+            console.log('Referral earnings created for referrer:', referralReg.referrer_user_id);
+          }
+        }
+      }
+    } catch (refError) {
+      // Don't fail the payment verification if referral tracking fails
+      console.error('Error tracking referral earnings:', refError);
+    }
+
     console.log('Payment verified and subscription updated:', subscription_id);
 
     return NextResponse.json({
