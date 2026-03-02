@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight, LayoutDashboard, CreditCard } from 'lucide-react';
+import { BarChart3, Store, ShieldCheck, ShoppingBag, TrendingUp, Users, Zap, CheckCircle2, ArrowRight, LayoutDashboard, CreditCard, AlertCircle, X, DollarSign, Package, FileText, Globe, Eye, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function Home() {
@@ -90,7 +90,7 @@ export default function Home() {
               <div className="space-y-6">
                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
                   <Zap className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">Powerful E-Commerce Platform</span>
+                  <span className="text-sm font-medium text-primary">All-in-One Store Management</span>
                 </div>
                 <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Stop Managing Your Gadget Business the Hard Way
@@ -136,6 +136,362 @@ export default function Home() {
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                   <span>Setup in Minutes</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Pain Points Section */}
+        <section className="w-full py-20 md:py-28 lg:py-32 bg-red-50/30">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-100 rounded-full border border-red-200">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <span className="text-sm font-medium text-red-600">Common Struggles</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                Are These Problems Killing Your Business?
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Most gadget store owners face these daily challenges. Sound familiar?
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+              <div className="flex flex-col space-y-3 p-6 bg-white rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-all">
+                <div className="bg-red-100 p-3 rounded-lg w-fit">
+                  <Package className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">No Proper Inventory Tracking</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Don't know what's in stock</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Sell items that are already finished</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Staff steal small accessories unnoticed</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Don't know your exact profit</span>
+                  </li>
+                </ul>
+                <p className="text-sm font-medium text-red-600 italic mt-2">
+                  "I'm selling but I don't know where my money is going."
+                </p>
+              </div>
+
+              <div className="flex flex-col space-y-3 p-6 bg-white rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-all">
+                <div className="bg-red-100 p-3 rounded-lg w-fit">
+                  <FileText className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">No Clear Record of Sales</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Everything written in notebooks</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>WhatsApp orders are scattered</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Transfers not tracked properly</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>End of month = confusion</span>
+                  </li>
+                </ul>
+                <p className="text-sm font-medium text-red-600 italic mt-2">
+                  "I'm working every day but I can't calculate my real income."
+                </p>
+              </div>
+
+              <div className="flex flex-col space-y-3 p-6 bg-white rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-all">
+                <div className="bg-red-100 p-3 rounded-lg w-fit">
+                  <Globe className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Poor Online Presence</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Post on WhatsApp status manually</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>No proper product catalog</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Customers keep asking: "Price?" "Available?"</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>No checkout link</span>
+                  </li>
+                </ul>
+                <p className="text-sm font-medium text-red-600 italic mt-2">
+                  "Customers stress me too much with repetitive questions."
+                </p>
+              </div>
+
+              <div className="flex flex-col space-y-3 p-6 bg-white rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-all">
+                <div className="bg-red-100 p-3 rounded-lg w-fit">
+                  <Users className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Staff Issues</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Staff change prices</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Staff sell without recording</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>No way to monitor them remotely</span>
+                  </li>
+                </ul>
+                <p className="text-sm font-medium text-red-600 italic mt-2">
+                  "When I'm not in the shop, anything can happen."
+                </p>
+              </div>
+
+              <div className="flex flex-col space-y-3 p-6 bg-white rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-all">
+                <div className="bg-red-100 p-3 rounded-lg w-fit">
+                  <BarChart3 className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">No Growth Insight</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Don't know best selling products</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Don't know slow moving products</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Can't track daily profit</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Restock blindly</span>
+                  </li>
+                </ul>
+                <p className="text-sm font-medium text-red-600 italic mt-2">
+                  "I don't know what is actually growing my business."
+                </p>
+              </div>
+
+              <div className="flex flex-col space-y-3 p-6 bg-white rounded-xl shadow-sm border border-red-100 hover:shadow-md transition-all">
+                <div className="bg-red-100 p-3 rounded-lg w-fit">
+                  <DollarSign className="h-6 w-6 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Profit Confusion</h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Can't separate revenue from profit</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>No monthly performance reports</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <X className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+                    <span>Guessing instead of knowing</span>
+                  </li>
+                </ul>
+                <p className="text-sm font-medium text-red-600 italic mt-2">
+                  "I need to see my real numbers, not guesswork."
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Solutions Section */}
+        <section className="w-full py-20 md:py-28 lg:py-32 bg-gradient-to-br from-green-50/50 via-white to-primary/5">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 rounded-full border border-green-200">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-600">How We Solve It</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                Your Complete Business Solution
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Stop struggling. Start growing. Here's exactly how we solve your problems.
+              </p>
+            </div>
+            <div className="grid gap-8 lg:grid-cols-2 max-w-6xl mx-auto">
+              <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">
+                <div className="bg-green-100 p-4 rounded-xl w-fit">
+                  <DollarSign className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Know Your Real Profit Daily</h3>
+                <p className="text-lg font-semibold text-green-600">"See exactly how much you make every single day."</p>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Automatic profit calculation</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Revenue tracking in real-time</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Monthly performance reports</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground italic mt-2">This removes guessing. You see your numbers instantly.</p>
+              </div>
+
+              <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">
+                <div className="bg-green-100 p-4 rounded-xl w-fit">
+                  <Package className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Never Lose Track of Inventory Again</h3>
+                <p className="text-lg font-semibold text-green-600">"Real-time stock updates that prevent losses."</p>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Real-time stock updates</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Low stock alerts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Automatic deduction when sold</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Track by product, variant, IMEI</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground italic mt-2">Stops accidental overselling, hidden theft, and dead stock waste.</p>
+              </div>
+
+              <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">
+                <div className="bg-green-100 p-4 rounded-xl w-fit">
+                  <ShoppingBag className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Proper POS System</h3>
+                <p className="text-lg font-semibold text-green-600">"Record everything. Track everyone. Control your sales."</p>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Record cash and transfers</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Print or send receipts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Track staff sales</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>See who sold what, when</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground italic mt-2">Monitor performance. See daily totals. Know your team's productivity.</p>
+              </div>
+
+              <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">
+                <div className="bg-green-100 p-4 rounded-xl w-fit">
+                  <Globe className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Instant Online Catalog</h3>
+                <p className="text-lg font-semibold text-green-600">"One link. Professional catalog. Zero stress."</p>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Share one link instead of sending pictures</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Customers see product image, price, description</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Order button for instant checkout</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>QR code for easy access</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground italic mt-2">Reduces stress, looks professional, increases trust, increases orders.</p>
+              </div>
+
+              <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">
+                <div className="bg-green-100 p-4 rounded-xl w-fit">
+                  <BarChart3 className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Business Intelligence</h3>
+                <p className="text-lg font-semibold text-green-600">"Know what's working. Restock smartly."</p>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Best selling products</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Slow moving stock alerts</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Revenue trends</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Profit margins</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground italic mt-2">Restock smartly. Focus on what makes money. Stop wasting on dead stock.</p>
+              </div>
+
+              <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">
+                <div className="bg-green-100 p-4 rounded-xl w-fit">
+                  <Eye className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Control Even When Away</h3>
+                <p className="text-lg font-semibold text-green-600">"Login from anywhere. Monitor everything."</p>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Login from anywhere</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>See live sales</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Monitor staff</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0 mt-0.5" />
+                    <span>Approve orders remotely</span>
+                  </li>
+                </ul>
+                <p className="text-sm text-muted-foreground italic mt-2">Peace of mind. Your business is always under control, even when you're not there.</p>
               </div>
             </div>
           </div>
@@ -332,6 +688,295 @@ export default function Home() {
               <p className="text-sm text-muted-foreground">
                 Start with a 14-day free trial. No credit card required to start.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Reviews Section */}
+        <section className="w-full py-20 md:py-28 lg:py-32 bg-gradient-to-br from-background via-primary/5 to-background">
+          <div className="container px-4 md:px-6 mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                <Star className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Customer Reviews</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
+                What Store Owners Are Saying
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Join hundreds of Nigerian retailers who transformed their business with Karigad
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 max-w-7xl mx-auto">
+              {/* Review 1 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">AO</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Adebayo Ojo</CardTitle>
+                        <CardDescription className="text-xs">Phone Store, Lagos</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "Before Karigad, I was losing money daily. I didn't know what was in stock, staff were selling without recording. Now I see everything in real-time. My profit increased by 40% in just 2 months!"
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 2 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">CK</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Chinwe Kalu</CardTitle>
+                        <CardDescription className="text-xs">Gadget Hub, Abuja</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "The online catalog feature is a game changer! Instead of sending pictures on WhatsApp, I just share one link. Customers can see prices, order directly. My sales doubled because it's so professional."
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 3 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">IM</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Ibrahim Musa</CardTitle>
+                        <CardDescription className="text-xs">Tech Store, Kano</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "The POS system saved my business. I can track cash and transfers properly now. I know exactly who sold what, when. No more confusion at month end. Everything is clear and organized."
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 4 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">FE</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Fatima Eze</CardTitle>
+                        <CardDescription className="text-xs">Mobile World, Port Harcourt</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "The analytics dashboard is incredible! I finally know my best selling products. I restock smartly now, not blindly. The low stock alerts prevent me from running out of popular items."
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 5 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">TO</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Tunde Okafor</CardTitle>
+                        <CardDescription className="text-xs">Gadget Zone, Ibadan</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "I can monitor my store even when I'm not there. I login from home, see live sales, check what staff are doing. This gives me peace of mind. The remote control feature is amazing!"
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 6 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">AA</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Amina Abdullahi</CardTitle>
+                        <CardDescription className="text-xs">Phone Palace, Kaduna</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "No more selling items that are finished! The inventory tracking is real-time. When something is sold, it automatically updates. I never oversell anymore. This alone saved me thousands."
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 7 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">DE</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">David Emeka</CardTitle>
+                        <CardDescription className="text-xs">Tech Solutions, Enugu</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "The profit calculation is automatic now. I see my real profit daily, not guesses. The monthly reports show me exactly where my money is going. This transparency changed everything."
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 8 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">BO</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Blessing Okoro</CardTitle>
+                        <CardDescription className="text-xs">Gadget Express, Owerri</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "Setup was so easy! I thought it would be complicated but I was up and running in minutes. The QR code for my catalog is everywhere now - on my business cards, WhatsApp status, everywhere!"
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 9 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">JA</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">James Adeyemi</CardTitle>
+                        <CardDescription className="text-xs">Mobile Tech, Benin</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "The staff tracking feature is a lifesaver. I can see who sold what, when. No more staff changing prices or selling without recording. Everything is transparent now. My business is under control."
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Review 10 */}
+              <Card className="border-primary/10 shadow-md hover:shadow-xl transition-all">
+                <CardHeader>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-primary font-bold">PO</span>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">Peace Okafor</CardTitle>
+                        <CardDescription className="text-xs">Smart Devices, Uyo</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex gap-0.5">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    "Best investment I made for my business. The 14-day free trial let me test everything. Now I can't imagine running my store without it. My revenue tracking, inventory, everything is perfect!"
+                  </p>
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
