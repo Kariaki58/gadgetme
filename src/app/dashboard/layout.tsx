@@ -54,14 +54,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Show subscription blocker if subscription is not active (unless on settings or subscription page)
   if (!subscriptionLoading && !isActive && !isAllowedPage) {
     return (
-      <div className="flex">
+      <div className="flex w-full overflow-x-hidden">
         <DashboardSidebar 
           isOpen={sidebarOpen} 
           onToggle={() => setSidebarOpen(!sidebarOpen)}
           isMobile={isMobile}
         />
-        <main className={`flex-1 min-h-screen bg-background transition-all duration-300 ${
-          isMobile ? 'ml-0' : (sidebarOpen ? 'ml-64' : 'ml-0')
+        <main className={`flex-1 min-h-screen bg-background overflow-x-hidden transition-all duration-300 ${
+          isMobile ? 'ml-0 pt-14 px-4 py-4' : (sidebarOpen ? 'ml-64 p-4 sm:p-6 md:p-8' : 'p-4 sm:p-6 md:p-8')
         }`}>
           <SubscriptionBlocker />
         </main>
@@ -70,16 +70,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="flex">
+    <div className="flex w-full overflow-x-hidden">
       <DashboardSidebar 
         isOpen={sidebarOpen} 
         onToggle={() => setSidebarOpen(!sidebarOpen)}
         isMobile={isMobile}
       />
-      <main className={`flex-1 min-h-screen bg-background p-8 transition-all duration-300 ${
-        isMobile ? 'ml-0' : (sidebarOpen ? 'ml-64' : 'ml-0')
+      <main className={`flex-1 min-h-screen bg-background overflow-x-hidden transition-all duration-300 ${
+        isMobile ? 'ml-0 pt-14 px-4 pb-4' : (sidebarOpen ? 'ml-64 p-4 sm:p-6 md:p-8' : 'p-4 sm:p-6 md:p-8')
       }`}>
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto w-full min-w-0">
           {children}
         </div>
       </main>

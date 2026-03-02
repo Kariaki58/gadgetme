@@ -24,7 +24,6 @@ This guide will help you set up Flutterwave subscriptions for GadgetMe.
 3. Copy the following:
    - **Secret Key** → `FLUTTERWAVE_SECRET_KEY`
    - **Public Key** → `NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY`
-   - **Secret Hash** (for webhooks) → `FLUTTERWAVE_SECRET_HASH`
 
 ## Step 3: Configure Environment Variables
 
@@ -34,25 +33,13 @@ Add these to your `.env.local` file:
 # Flutterwave Configuration
 FLUTTERWAVE_SECRET_KEY=your_secret_key_here
 NEXT_PUBLIC_FLUTTERWAVE_PUBLIC_KEY=your_public_key_here
-FLUTTERWAVE_SECRET_HASH=your_secret_hash_here
 FLUTTERWAVE_BASE_URL=https://api.flutterwave.com/v3
 
 # App URL (for redirects)
 NEXT_PUBLIC_APP_URL=http://localhost:3000  # Change to your production URL
 ```
 
-## Step 4: Set Up Webhook
-
-1. In Flutterwave dashboard, go to **Settings** → **Webhooks**
-2. Click **Add Webhook**
-3. Set the webhook URL to: `https://your-domain.com/api/subscriptions/webhook`
-4. Select these events:
-   - `charge.completed`
-   - `subscription.cancelled`
-5. Copy the **Secret Hash** and add it to your `.env.local` as `FLUTTERWAVE_SECRET_HASH`
-6. Save the webhook
-
-## Step 5: Test the Setup
+## Step 4: Test the Setup
 
 1. Start your development server: `npm run dev`
 2. Sign up a new store (they'll automatically get a 14-day trial)
@@ -60,7 +47,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000  # Change to your production URL
 4. Try to access the dashboard - you should see the subscription blocker
 5. Click "Subscribe Monthly" or "Subscribe Yearly"
 6. Complete the payment on Flutterwave
-7. Verify the webhook updates the subscription status
+7. You'll be redirected to the payment verification page, which will verify and activate your subscription
 
 ## Subscription Plans
 
@@ -75,7 +62,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000  # Change to your production URL
 3. **Blocking**: If subscription is expired or trial ended, users see a subscription blocker
 4. **Checkout**: Users click subscribe, which creates a Flutterwave payment link
 5. **Payment**: Users complete payment on Flutterwave
-6. **Webhook**: Flutterwave sends webhook to update subscription status
+6. **Verification**: After payment, users are redirected to the verification page which verifies the payment and activates the subscription
 7. **Access**: Once active, users can access all dashboard features
 
 ## Database Schema
@@ -91,16 +78,12 @@ The `subscriptions` table stores:
 
 ## Troubleshooting
 
-### Webhook not receiving events
-- Check that the webhook URL is publicly accessible
-- Verify the secret hash matches in both Flutterwave and your `.env.local`
-- Check Flutterwave webhook logs for errors
-
 ### Subscription not updating after payment
-- Check webhook logs in Flutterwave dashboard
-- Verify webhook endpoint is accessible
-- Check server logs for webhook processing errors
+- Check that you completed the payment verification flow
+- Verify the payment verification API endpoint is working
+- Check server logs for payment verification errors
 - Manually verify subscription status in Supabase
+- Ensure the redirect URL is correctly configured in Flutterwave
 
 ### Users can't access dashboard
 - Check subscription status in Supabase
@@ -110,7 +93,7 @@ The `subscriptions` table stores:
 ## Security Notes
 
 - Never expose `FLUTTERWAVE_SECRET_KEY` in client-side code
-- Always verify webhook signatures using `FLUTTERWAVE_SECRET_HASH`
 - Use service role key only in server-side API routes
 - Enable RLS on subscriptions table (already done in migration)
+- Payment verification is handled server-side for security
 

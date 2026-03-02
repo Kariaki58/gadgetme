@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mail, ArrowLeft, CheckCircle2, Smartphone, Loader2 } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
@@ -14,9 +15,16 @@ function VerifyEmailContent() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Smartphone className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold text-primary">Karigad</span>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="relative w-16 h-16">
+            <Image
+              src="/store-logo.png"
+              alt="Karigad Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
         <Card className="border-primary/20 shadow-xl">
           <CardHeader className="space-y-1">

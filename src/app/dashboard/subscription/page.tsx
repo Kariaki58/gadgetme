@@ -34,10 +34,10 @@ export default function SubscriptionPage() {
         title: "Payment Successful!",
         description: "Your subscription is being activated. Please wait a moment...",
       });
-      // Refresh subscription after a short delay to allow webhook to process
+      // Refresh subscription status
       setTimeout(() => {
         refreshSubscription();
-      }, 3000);
+      }, 2000);
       // Clean up URL
       window.history.replaceState({}, '', '/dashboard/subscription');
     }
@@ -109,8 +109,8 @@ export default function SubscriptionPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-primary">Subscription</h1>
-        <p className="text-muted-foreground mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary">Subscription</h1>
+        <p className="text-sm text-muted-foreground mt-2">
           Manage your subscription plan and billing information
         </p>
       </div>
@@ -119,7 +119,7 @@ export default function SubscriptionPage() {
       {subscription && (
         <Card className="border-primary/20">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-wrap items-center justify-between gap-2">
               <span>Current Subscription</span>
               <Badge 
                 variant={isActive ? 'default' : 'destructive'}
@@ -219,8 +219,8 @@ export default function SubscriptionPage() {
       {/* Subscription Plans */}
       {(!isActive || isExpired) && (
         <div>
-          <h2 className="text-2xl font-bold mb-4">Choose Your Plan</h2>
-          <div className="grid md:grid-cols-2 gap-6">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">Choose Your Plan</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Monthly Plan */}
             <Card className="border-primary/20 hover:border-primary/40 transition-colors">
               <CardHeader>

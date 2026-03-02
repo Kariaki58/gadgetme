@@ -20,8 +20,9 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
-import { Smartphone, Loader2, Sparkles, CreditCard } from 'lucide-react';
+import { Loader2, Sparkles, CreditCard } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 
 const formSchema = z.object({
   storeName: z.string().min(2, 'Store name must be at least 2 characters'),
@@ -98,9 +99,16 @@ function SignupForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Smartphone className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold text-primary">Karigad</span>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="relative w-16 h-16">
+            <Image
+              src="/store-logo.png"
+              alt="Karigad Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
         <Card className="border-primary/20 shadow-xl">
           <CardHeader className="space-y-1">
@@ -249,7 +257,14 @@ export default function SignupPage() {
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20">
         <div className="text-center space-y-4">
-          <Smartphone className="h-12 w-12 text-primary mx-auto animate-pulse" />
+          <div className="relative w-16 h-16 mx-auto">
+            <Image
+              src="/store-logo.png"
+              alt="Karigad Logo"
+              fill
+              className="object-contain animate-pulse"
+            />
+          </div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>

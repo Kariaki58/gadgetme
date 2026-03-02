@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Smartphone, Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
+import Image from 'next/image';
 
 import { login } from '@/app/auth/actions';
 
@@ -91,9 +92,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 px-4">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <Smartphone className="h-8 w-8 text-primary" />
-          <span className="text-2xl font-bold text-primary">Karigad</span>
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="relative w-16 h-16">
+            <Image
+              src="/store-logo.png"
+              alt="Karigad Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </div>
         <Suspense fallback={
           <Card className="border-primary/20 shadow-xl">

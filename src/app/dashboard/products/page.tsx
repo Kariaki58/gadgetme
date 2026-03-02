@@ -462,7 +462,7 @@ export default function ProductsPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Product Name *</Label>
                   <Input 
@@ -507,7 +507,7 @@ export default function ProductsPage() {
                 />
               </div>
               
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="costPrice">Cost Price (₦) *</Label>
                   <Input 
@@ -550,7 +550,7 @@ export default function ProductsPage() {
                 </div>
                 
                 {/* Add Variant Form */}
-                <div className="grid grid-cols-4 gap-2 p-3 bg-secondary/30 rounded-lg">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-secondary/30 rounded-lg">
                   <Input
                     placeholder="Color name (e.g. Black)"
                     value={newVariant.colorName}
@@ -651,7 +651,7 @@ export default function ProductsPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="rounded-md border border-primary/5">
+          <div className="rounded-md border border-primary/5 overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="bg-secondary/30">

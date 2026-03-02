@@ -251,54 +251,9 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
-              {/* Free Trial Plan */}
-              <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all duration-300 relative">
-                <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-2xl">Free Trial</CardTitle>
-                  <CardDescription>Perfect for getting started</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-primary">₦0</div>
-                    <div className="text-sm text-muted-foreground mt-1">14 days free</div>
-                  </div>
-                  <Separator />
-                  <ul className="space-y-3 text-sm">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <span>Full access to all features</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <span>Unlimited products</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <span>POS system</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <span>Analytics & reports</span>
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                      <span>Public catalog with QR code</span>
-                    </li>
-                  </ul>
-                  <Button
-                    className="w-full h-12 text-base"
-                    variant="outline"
-                    onClick={() => handlePlanSelect('free')}
-                  >
-                    Start Free Trial
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardContent>
-              </Card>
-
+            <div className="flex justify-center max-w-2xl mx-auto">
               {/* Monthly/Yearly Plan */}
-              <Card className="border-2 border-primary hover:border-primary transition-all duration-300 relative md:scale-105 shadow-xl">
+              <Card className="border-2 border-primary hover:border-primary transition-all duration-300 relative w-full shadow-xl">
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <Badge className="bg-primary text-primary-foreground px-4 py-1">
                     {billingCycle === 'yearly' ? 'Best Value' : 'Popular'}
@@ -371,50 +326,11 @@ export default function Home() {
                   </Button>
                 </CardContent>
               </Card>
-
-              {/* Comparison Card - Shows both plans */}
-              <Card className="border-2 border-primary/20 hover:border-primary/40 transition-all duration-300">
-                <CardHeader className="text-center pb-4">
-                  <CardTitle className="text-2xl">Compare Plans</CardTitle>
-                  <CardDescription>See what's included</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-center justify-between p-2 bg-secondary/50 rounded">
-                      <span className="font-medium">All Features</span>
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-secondary/50 rounded">
-                      <span className="font-medium">Unlimited Products</span>
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-secondary/50 rounded">
-                      <span className="font-medium">POS System</span>
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-secondary/50 rounded">
-                      <span className="font-medium">Analytics</span>
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    </div>
-                    <div className="flex items-center justify-between p-2 bg-secondary/50 rounded">
-                      <span className="font-medium">Public Catalog</span>
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="text-center text-sm text-muted-foreground">
-                    <p className="font-semibold mb-1">All plans include:</p>
-                    <p>• 14-day free trial</p>
-                    <p>• No credit card required</p>
-                    <p>• Cancel anytime</p>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             <div className="text-center mt-12">
               <p className="text-sm text-muted-foreground">
-                All plans include a 14-day free trial. No credit card required to start.
+                Start with a 14-day free trial. No credit card required to start.
               </p>
             </div>
           </div>

@@ -64,10 +64,10 @@ export default function SettingsPage() {
         title: "Payment Successful!",
         description: "Your subscription is being activated. Please wait a moment...",
       });
-      // Refresh subscription after a short delay to allow webhook to process
+      // Refresh subscription status
       setTimeout(() => {
         refreshSubscription();
-      }, 3000);
+      }, 2000);
       // Clean up URL
       window.history.replaceState({}, '', '/dashboard/settings');
     }
@@ -136,11 +136,11 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Store Settings</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold">Store Settings</h1>
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             Manage your store details, account information, and delivery options.
           </p>
         </div>
@@ -238,10 +238,10 @@ export default function SettingsPage() {
               <CardDescription>Choose how customers can receive their orders</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="acceptsDelivery">Accept Delivery Orders</Label>
-                  <p className="text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                <div className="space-y-0.5 flex-1">
+                  <Label htmlFor="acceptsDelivery" className="text-sm sm:text-base">Accept Delivery Orders</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Allow customers to request delivery to their location
                   </p>
                 </div>
@@ -251,13 +251,14 @@ export default function SettingsPage() {
                   onCheckedChange={(checked) =>
                     setFormData({ ...formData, acceptsDelivery: checked })
                   }
+                  className="sm:shrink-0"
                 />
               </div>
               <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="acceptsPickup">Accept Pickup Orders</Label>
-                  <p className="text-sm text-muted-foreground">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                <div className="space-y-0.5 flex-1">
+                  <Label htmlFor="acceptsPickup" className="text-sm sm:text-base">Accept Pickup Orders</Label>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Allow customers to pick up orders from your location
                   </p>
                 </div>
@@ -267,6 +268,7 @@ export default function SettingsPage() {
                   onCheckedChange={(checked) =>
                     setFormData({ ...formData, acceptsPickup: checked })
                   }
+                  className="sm:shrink-0"
                 />
               </div>
             </CardContent>
@@ -300,7 +302,7 @@ export default function SettingsPage() {
                   placeholder="Street address"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="city">City</Label>
                   <Input
@@ -332,40 +334,40 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               {subscription ? (
                 <>
-                  <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">Current Plan:</span>
-                        <Badge variant={isActive ? 'default' : 'destructive'}>
+                  <div className="p-4 bg-secondary/50 rounded-lg">
+                    <div className="space-y-2 sm:space-y-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-semibold text-sm sm:text-base">Current Plan:</span>
+                        <Badge variant={isActive ? 'default' : 'destructive'} className="text-xs">
                           {subscription.plan_type === 'trial' ? 'Trial' : 
                            subscription.plan_type === 'monthly' ? 'Monthly' : 'Yearly'}
                         </Badge>
-                        <Badge variant={isActive ? 'default' : 'destructive'}>
+                        <Badge variant={isActive ? 'default' : 'destructive'} className="text-xs">
                           {subscription.status === 'trial' ? 'Trial' :
                            subscription.status === 'active' ? 'Active' :
                            subscription.status === 'expired' ? 'Expired' : 'Cancelled'}
                         </Badge>
                       </div>
                       {subscription.plan_type === 'trial' && subscription.trial_end_date && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                          <span className="break-words">
                             Trial ends: {new Date(subscription.trial_end_date).toLocaleDateString()}
                           </span>
                         </div>
                       )}
                       {subscription.current_period_end && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4" />
-                          <span>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                          <span className="break-words">
                             Renews: {new Date(subscription.current_period_end).toLocaleDateString()}
                           </span>
                         </div>
                       )}
                       {subscription.amount_paid && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CreditCard className="h-4 w-4" />
-                          <span>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                          <CreditCard className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                          <span className="break-words">
                             Amount: ₦{subscription.amount_paid.toLocaleString()}
                           </span>
                         </div>
@@ -376,13 +378,13 @@ export default function SettingsPage() {
                   {!isActive && (
                     <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 rounded-lg">
                       <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 mb-3">
-                        <AlertTriangle className="h-5 w-5" />
-                        <span className="font-semibold">Subscription Required</span>
+                        <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+                        <span className="font-semibold text-sm sm:text-base">Subscription Required</span>
                       </div>
-                      <p className="text-sm text-amber-700 dark:text-amber-300 mb-4">
+                      <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 mb-4">
                         Your subscription has expired. Please subscribe to continue using GadgetMe.
                       </p>
-                      <div className="flex gap-3">
+                      <div className="flex flex-col sm:flex-row gap-3">
                         <Button
                           onClick={async () => {
                             try {
@@ -407,10 +409,10 @@ export default function SettingsPage() {
                             }
                           }}
                           disabled={isCreatingCheckout}
-                          className="flex-1"
+                          className="w-full sm:flex-1"
                         >
                           <CreditCard className="mr-2 h-4 w-4" />
-                          Subscribe Monthly (₦20,000)
+                          <span className="text-xs sm:text-sm">Subscribe Monthly (₦20,000)</span>
                         </Button>
                         <Button
                           onClick={async () => {
@@ -436,10 +438,10 @@ export default function SettingsPage() {
                             }
                           }}
                           disabled={isCreatingCheckout}
-                          className="flex-1 bg-primary"
+                          className="w-full sm:flex-1 bg-primary"
                         >
                           <CreditCard className="mr-2 h-4 w-4" />
-                          Subscribe Yearly (₦200,000)
+                          <span className="text-xs sm:text-sm">Subscribe Yearly (₦200,000)</span>
                         </Button>
                       </div>
                     </div>
@@ -457,7 +459,7 @@ export default function SettingsPage() {
             <Button
               type="submit"
               disabled={saving}
-              className="min-w-[120px]"
+              className="w-full sm:w-auto min-w-[120px]"
             >
               {saving ? (
                 <>

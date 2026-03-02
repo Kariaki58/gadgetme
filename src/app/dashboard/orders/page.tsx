@@ -161,13 +161,13 @@ export default function OrdersPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-primary">Orders Management</h1>
-        <p className="text-muted-foreground">Manage customer orders, confirm payments, and track order status.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary">Orders Management</h1>
+        <p className="text-sm text-muted-foreground">Manage customer orders, confirm payments, and track order status.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Card className="border-primary/10">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">Pending Payment</CardTitle>
@@ -221,9 +221,9 @@ export default function OrdersPage() {
                   <Card key={order.id} className="border-primary/10">
                     <CardContent className="p-6">
                       <div className="space-y-4">
-                        <div className="flex items-start justify-between">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <h3 className="font-bold text-lg">Order #{order.id.slice(0, 8)}</h3>
                               <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
                                 <Clock className="h-3 w-3 mr-1" /> Pending Payment
@@ -233,7 +233,7 @@ export default function OrdersPage() {
                               {new Date(order.createdAt).toLocaleString()}
                             </p>
                           </div>
-                          <div className="text-right">
+                          <div className="sm:text-right">
                             <p className="text-2xl font-bold text-primary">₦{order.totalAmount.toLocaleString()}</p>
                           </div>
                         </div>
@@ -308,95 +308,141 @@ export default function OrdersPage() {
               <p>No paid orders</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Items</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paidOrders.map((order) => {
-                    const items = getOrderItems(order);
-                    return (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{order.customerName}</p>
-                            <p className="text-xs text-muted-foreground">{order.customerPhone}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            {items.slice(0, 2).map((item, idx) => (
-                              <p key={idx} className="text-sm">
-                                {item.product!.name} × {item.quantity}
-                              </p>
-                            ))}
-                            {items.length > 2 && (
-                              <p className="text-xs text-muted-foreground">+{items.length - 2} more</p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="font-bold">₦{order.totalAmount.toLocaleString()}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {updatingOrders.has(order.id) && (
-                              <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                            )}
-                            <Select
-                              value={order.orderStatus}
-                              onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
-                              disabled={updatingOrders.has(order.id)}
-                            >
-                              <SelectTrigger className="w-40 disabled:opacity-50">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="paid">Paid</SelectItem>
-                                <SelectItem value="packaged">Packaged</SelectItem>
-                                <SelectItem value="shipped">Shipped</SelectItem>
-                                <SelectItem value="delivered">Delivered</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {order.orderStatus === 'paid' && (
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                                <Package className="h-3 w-3 mr-1" /> Ready to Package
-                              </Badge>
-                            )}
-                            {order.orderStatus === 'packaged' && (
-                              <Badge variant="outline" className="bg-purple-50 text-purple-700">
-                                <Package className="h-3 w-3 mr-1" /> Packaged
-                              </Badge>
-                            )}
-                            {order.orderStatus === 'shipped' && (
-                              <Badge variant="outline" className="bg-orange-50 text-orange-700">
-                                <Truck className="h-3 w-3 mr-1" /> Shipped
-                              </Badge>
-                            )}
-                            {order.orderStatus === 'delivered' && (
-                              <Badge variant="outline" className="bg-green-50 text-green-700">
-                                <CheckCircle2 className="h-3 w-3 mr-1" /> Delivered
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+            <>
+              {/* Mobile card view */}
+              <div className="sm:hidden space-y-3">
+                {paidOrders.map((order) => {
+                  const items = getOrderItems(order);
+                  return (
+                    <div key={order.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-mono text-xs text-muted-foreground">#{order.id.slice(0, 8)}</p>
+                          <p className="font-semibold">{order.customerName}</p>
+                          <p className="text-xs text-muted-foreground">{order.customerPhone}</p>
+                        </div>
+                        <p className="font-bold text-primary">₦{order.totalAmount.toLocaleString()}</p>
+                      </div>
+                      <div className="text-sm space-y-1">
+                        {items.slice(0, 2).map((item, idx) => (
+                          <p key={idx} className="text-muted-foreground">{item.product!.name} × {item.quantity}</p>
+                        ))}
+                        {items.length > 2 && <p className="text-xs text-muted-foreground">+{items.length - 2} more</p>}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {updatingOrders.has(order.id) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                        <Select
+                          value={order.orderStatus}
+                          onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
+                          disabled={updatingOrders.has(order.id)}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="packaged">Packaged</SelectItem>
+                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop table view */}
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Order ID</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Items</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paidOrders.map((order) => {
+                      const items = getOrderItems(order);
+                      return (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-mono text-xs">#{order.id.slice(0, 8)}</TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{order.customerName}</p>
+                              <p className="text-xs text-muted-foreground">{order.customerPhone}</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              {items.slice(0, 2).map((item, idx) => (
+                                <p key={idx} className="text-sm">
+                                  {item.product!.name} × {item.quantity}
+                                </p>
+                              ))}
+                              {items.length > 2 && (
+                                <p className="text-xs text-muted-foreground">+{items.length - 2} more</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-bold">₦{order.totalAmount.toLocaleString()}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {updatingOrders.has(order.id) && (
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                              )}
+                              <Select
+                                value={order.orderStatus}
+                                onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
+                                disabled={updatingOrders.has(order.id)}
+                              >
+                                <SelectTrigger className="w-40 disabled:opacity-50">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="paid">Paid</SelectItem>
+                                  <SelectItem value="packaged">Packaged</SelectItem>
+                                  <SelectItem value="shipped">Shipped</SelectItem>
+                                  <SelectItem value="delivered">Delivered</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              {order.orderStatus === 'paid' && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                  <Package className="h-3 w-3 mr-1" /> Ready to Package
+                                </Badge>
+                              )}
+                              {order.orderStatus === 'packaged' && (
+                                <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                                  <Package className="h-3 w-3 mr-1" /> Packaged
+                                </Badge>
+                              )}
+                              {order.orderStatus === 'shipped' && (
+                                <Badge variant="outline" className="bg-orange-50 text-orange-700">
+                                  <Truck className="h-3 w-3 mr-1" /> Shipped
+                                </Badge>
+                              )}
+                              {order.orderStatus === 'delivered' && (
+                                <Badge variant="outline" className="bg-green-50 text-green-700">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" /> Delivered
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

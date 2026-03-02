@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useStoreDataSupabaseAuth } from '@/hooks/use-store-data-supabase-auth';
+import { useAuth } from '@/contexts/auth-context';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { 
   TrendingUp, 
@@ -38,6 +39,7 @@ type TimeFilter = 'today' | '7days' | '30days' | 'all';
 
 export default function DashboardPage() {
   const { store, orders, posTransactions, loading } = useStoreDataSupabaseAuth();
+  const { user, loading: authLoading } = useAuth();
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('today');
   const [dismissedBanner, setDismissedBanner] = useState(false);
 
@@ -138,15 +140,27 @@ export default function DashboardPage() {
     }
   }, [store]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+        <div className="text-center space-y-4">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
-  if (!store) return null;
+  if (!store) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center space-y-4">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto" />
+          <p className="text-muted-foreground">Loading store data...</p>
+        </div>
+      </div>
+    );
+  }
 
   const { filteredOrders, filteredTransactions } = getFilteredData;
 
@@ -257,7 +271,7 @@ export default function DashboardPage() {
   const showBanner = isStoreInfoIncomplete() && !dismissedBanner;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8">
       {/* Incomplete Store Information Banner */}
       {showBanner && (
         <Alert className="border-amber-200 bg-amber-50/50 dark:bg-amber-950/20">
@@ -290,13 +304,13 @@ export default function DashboardPage() {
         </Alert>
       )}
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-primary">Welcome back, {store.storeName}</h1>
-          <p className="text-muted-foreground">Here's what's happening in your business.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-primary">Welcome back, {store.storeName}</h1>
+          <p className="text-sm text-muted-foreground">Here's what's happening in your business.</p>
         </div>
         <Select value={timeFilter} onValueChange={(value: TimeFilter) => setTimeFilter(value)}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -308,7 +322,7 @@ export default function DashboardPage() {
         </Select>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card className="border-primary/10 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
@@ -356,7 +370,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         <Card className="border-primary/10 shadow-sm hover:shadow-md transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Cash Payments</CardTitle>
@@ -380,7 +394,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+      <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4 border-primary/10">
           <CardHeader>
             <CardTitle>Revenue Over Time</CardTitle>

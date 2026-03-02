@@ -61,6 +61,7 @@ export default function POSPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showVariantDialog, setShowVariantDialog] = useState(false);
   const [selectedProductForVariant, setSelectedProductForVariant] = useState<typeof products[0] | null>(null);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const { user } = useAuth();
   const { store, products: storeProducts, loading, loadStoreData, addPOSTransaction } = useStoreDataSupabase();
   
@@ -360,21 +361,36 @@ export default function POSPage() {
   const activeCartItemCount = activeCustomer ? getCartItemCount(activeCustomer.items) : 0;
 
   return (
-    <div className="fixed inset-0 left-64 top-0 right-0 bottom-0 flex flex-col bg-gradient-to-br from-background via-background to-secondary/20 overflow-hidden z-40">
+    <div className="flex flex-col h-screen max-h-screen overflow-hidden bg-gradient-to-br from-background via-background to-secondary/20">
       {/* Header */}
-      <header className="border-b bg-white/95 backdrop-blur-sm shadow-sm px-6 py-4 flex items-center justify-between shrink-0">
+      <header className="border-b bg-white/95 backdrop-blur-sm shadow-sm px-4 sm:px-6 py-3 flex items-center justify-between shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Point of Sale</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Fast checkout system</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Point of Sale</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Fast checkout system</p>
         </div>
-        <Button onClick={addNewCustomer} className="bg-primary hover:bg-primary/90 shadow-sm">
-          <UserPlus className="mr-2 h-4 w-4" /> New Customer
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Mobile cart toggle button */}
+          <button
+            className="lg:hidden relative flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold shadow"
+            onClick={() => setShowMobileCart(true)}
+          >
+            <ShoppingCart className="h-4 w-4" />
+            {activeCartItemCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                {activeCartItemCount}
+              </span>
+            )}
+            <span className="hidden sm:inline">Cart</span>
+          </button>
+          <Button onClick={addNewCustomer} className="bg-primary hover:bg-primary/90 shadow-sm text-sm">
+            <UserPlus className="mr-2 h-4 w-4" /> <span className="hidden sm:inline">New </span>Customer
+          </Button>
+        </div>
       </header>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Main Product Grid */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {/* Search and Category Filter */}
           <div className="mb-6 flex flex-col sm:flex-row gap-4 items-stretch sm:items-center">
             <div className="relative flex-1">
@@ -458,8 +474,22 @@ export default function POSPage() {
           </div>
         </div>
 
-        {/* Cart Panel - Always Visible */}
-        <div className="w-96 border-l bg-white/95 backdrop-blur-sm shadow-2xl flex flex-col shrink-0">
+        {/* Mobile Cart Overlay Backdrop */}
+        {showMobileCart && (
+          <div
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            onClick={() => setShowMobileCart(false)}
+          />
+        )}
+
+        {/* Cart Panel */}
+        <div className={`
+          fixed bottom-0 left-0 right-0 z-40 lg:static lg:z-auto
+          lg:w-96 lg:border-l bg-white/95 backdrop-blur-sm shadow-2xl flex flex-col
+          transition-transform duration-300 ease-in-out
+          ${showMobileCart ? 'translate-y-0' : 'translate-y-full lg:translate-y-0'}
+          max-h-[85vh] lg:max-h-none
+        `}>
           {/* Customer Tabs */}
           <div className="border-b bg-gradient-to-r from-secondary/40 to-secondary/20 p-3 flex gap-2 overflow-x-auto">
             {customers.map(customer => {
@@ -623,20 +653,20 @@ export default function POSPage() {
           </div>
 
           {/* Cart Summary & Payment */}
-          <div className="border-t bg-gradient-to-t from-secondary/40 to-white p-5 space-y-4 shrink-0 shadow-lg">
-            <div className="space-y-3">
+          <div className="border-t bg-gradient-to-t from-secondary/40 to-white p-4 space-y-3 shrink-0 shadow-lg">
+            <div className="space-y-2">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-muted-foreground font-medium">Items</span>
                 <span className="font-bold text-foreground">{activeCartItemCount}</span>
               </div>
-              <div className="flex justify-between items-center text-xl font-black border-t-2 border-primary/20 pt-3">
+              <div className="flex justify-between items-center text-xl font-black border-t-2 border-primary/20 pt-2">
                 <span className="text-foreground">Total</span>
                 <span className="text-primary text-2xl">₦{activeCartTotal.toLocaleString()}</span>
               </div>
             </div>
             <Button
               className="w-full h-12 text-lg bg-primary hover:bg-primary/90"
-              onClick={handlePayment}
+              onClick={() => { handlePayment(); setShowMobileCart(false); }}
               disabled={!activeCustomer || activeCustomer.items.length === 0 || isProcessingPayment}
             >
               {isProcessingPayment ? (
