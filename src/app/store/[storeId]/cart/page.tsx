@@ -387,23 +387,29 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
         </Card>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="flex-1 h-11 sm:h-12"
-            onClick={onDownloadPDF}
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Download Receipt (PDF)
-          </Button>
-          <Button
-            type="button"
-            className="flex-1 h-11 sm:h-12 bg-primary"
-            onClick={onContinueShopping}
-          >
-            Continue Shopping
-          </Button>
+        <div className="space-y-3">
+          <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <p className="text-sm text-blue-800 font-medium mb-2">💾 Save Your Receipt</p>
+            <p className="text-xs text-blue-700">Download your order receipt as a PDF for your records.</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 h-11 sm:h-12 border-2 border-primary hover:bg-primary hover:text-white"
+              onClick={onDownloadPDF}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download Receipt (PDF)
+            </Button>
+            <Button
+              type="button"
+              className="flex-1 h-11 sm:h-12 bg-primary"
+              onClick={onContinueShopping}
+            >
+              Continue Shopping
+            </Button>
+          </div>
         </div>
       </div>
     );
