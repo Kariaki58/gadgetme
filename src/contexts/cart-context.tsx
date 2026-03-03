@@ -6,9 +6,9 @@ import { getStorageData, setStorageData } from '@/lib/storage-utils';
 
 interface CartContextType {
   items: Array<CartItem & { product: Product }>;
-  addToCart: (product: Product, quantity: number) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addToCart: (product: Product, quantity: number, variantId?: string) => void;
+  removeFromCart: (productId: string, variantId?: string) => void;
+  updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
@@ -39,25 +39,35 @@ export function CartProvider({ children, storeId }: { children: ReactNode; store
     }
   }, [items, storeId]);
 
-  const addToCart = (product: Product, quantity: number) => {
+  const addToCart = (product: Product, quantity: number, variantId?: string) => {
     setItems(prev => {
-      const existingItem = prev.find(item => item.productId === product.id);
+      // Find existing item with same productId and variantId
+      const existingItem = prev.find(item => 
+        item.productId === product.id && item.variantId === variantId
+      );
+      
+      // Get available stock for variant or base
+      const availableStock = variantId 
+        ? (product.variants?.find(v => v.id === variantId)?.stock || 0)
+        : product.baseStock;
+      
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantity;
-        if (newQuantity > product.stock) {
+        if (newQuantity > availableStock) {
           return prev; // Don't add if exceeds stock
         }
         return prev.map(item =>
-          item.productId === product.id
+          item.productId === product.id && item.variantId === variantId
             ? { ...item, quantity: newQuantity }
             : item
         );
       } else {
-        if (quantity > product.stock) {
+        if (quantity > availableStock) {
           return prev; // Don't add if exceeds stock
         }
         return [...prev, {
           productId: product.id,
+          variantId,
           quantity,
           price: product.sellingPrice,
           product
@@ -66,22 +76,31 @@ export function CartProvider({ children, storeId }: { children: ReactNode; store
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setItems(prev => prev.filter(item => item.productId !== productId));
+  const removeFromCart = (productId: string, variantId?: string) => {
+    setItems(prev => prev.filter(item => 
+      !(item.productId === productId && item.variantId === variantId)
+    ));
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, variantId?: string) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, variantId);
       return;
     }
     setItems(prev => {
-      const item = prev.find(i => i.productId === productId);
-      if (item && quantity > item.product.stock) {
+      const item = prev.find(i => i.productId === productId && i.variantId === variantId);
+      if (!item) return prev;
+      
+      // Get available stock for variant or base
+      const availableStock = variantId 
+        ? (item.product.variants?.find(v => v.id === variantId)?.stock || 0)
+        : item.product.baseStock;
+      
+      if (quantity > availableStock) {
         return prev; // Don't update if exceeds stock
       }
       return prev.map(item =>
-        item.productId === productId
+        item.productId === productId && item.variantId === variantId
           ? { ...item, quantity }
           : item
       );

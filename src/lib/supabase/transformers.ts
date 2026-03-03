@@ -14,6 +14,30 @@ export function transformProduct(supabaseProduct: any): Product {
     imageUrls = supabaseProduct.image_url ? [supabaseProduct.image_url] : [];
   }
 
+  // Handle variants from different API response formats
+  let variants: ProductVariant[] = [];
+  if (supabaseProduct.product_variants) {
+    // Format from Supabase query with join
+    variants = supabaseProduct.product_variants.map((v: any) => ({
+      id: v.id,
+      productId: v.product_id,
+      colorName: v.color_name,
+      colorHex: v.color_hex,
+      stock: v.stock,
+      createdAt: v.created_at,
+    }));
+  } else if (supabaseProduct.variants && Array.isArray(supabaseProduct.variants)) {
+    // Format from API route that combines variants
+    variants = supabaseProduct.variants.map((v: any) => ({
+      id: v.id,
+      productId: v.product_id,
+      colorName: v.color_name,
+      colorHex: v.color_hex,
+      stock: v.stock,
+      createdAt: v.created_at,
+    }));
+  }
+
   return {
     id: supabaseProduct.id,
     storeId: supabaseProduct.store_id,
@@ -24,16 +48,7 @@ export function transformProduct(supabaseProduct: any): Product {
     sellingPrice: parseFloat(supabaseProduct.selling_price),
     baseStock: supabaseProduct.base_stock || 0,
     imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
-    variants: supabaseProduct.product_variants
-      ? supabaseProduct.product_variants.map((v: any) => ({
-          id: v.id,
-          productId: v.product_id,
-          colorName: v.color_name,
-          colorHex: v.color_hex,
-          stock: v.stock,
-          createdAt: v.created_at,
-        }))
-      : [],
+    variants: variants.length > 0 ? variants : undefined,
     createdAt: supabaseProduct.created_at,
     updatedAt: supabaseProduct.updated_at,
   };

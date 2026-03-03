@@ -106,7 +106,23 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!store || items.length === 0) return;
-    // Just show the payment details, don't create order yet
+    
+    // Validate required fields
+    if (!checkoutForm.name || !checkoutForm.phone || !checkoutForm.address || !checkoutForm.city || !checkoutForm.state) {
+      toast({
+        title: "Required fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Form is valid - payment details are shown and "I Have Completed Payment" button will appear
+    // User needs to complete payment externally first, then click the button
+    toast({
+      title: "Payment Details Ready",
+      description: "Please complete the transfer and click 'I Have Completed Payment' when done.",
+    });
   };
 
   const handlePaymentCompleted = async () => {
@@ -116,6 +132,7 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
       // Create order in database
       const orderItems = items.map(item => ({
         productId: item.productId,
+        variantId: item.variantId,
         quantity: item.quantity,
         price: item.price,
       }));
@@ -175,9 +192,13 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
   const generateWhatsAppMessage = () => {
     if (!store || items.length === 0) return '';
     
-    const orderItems = items.map(item => 
-      `${item.product.name} × ${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}`
-    ).join('\n');
+    const orderItems = items.map(item => {
+      const variant = item.variantId && item.product.variants 
+        ? item.product.variants.find(v => v.id === item.variantId)
+        : null;
+      const variantText = variant ? ` (${variant.colorName})` : '';
+      return `${item.product.name}${variantText} × ${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}`;
+    }).join('\n');
 
     const orderDetails = [
       `Order Items:`,
@@ -313,11 +334,26 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2 mb-1">
-                            <h3 className="font-bold text-sm sm:text-base lg:text-lg truncate flex-1">{item.product.name}</h3>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-sm sm:text-base lg:text-lg truncate">{item.product.name}</h3>
+                              {item.variantId && item.product.variants && (
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div 
+                                    className="w-4 h-4 rounded border shrink-0"
+                                    style={{ 
+                                      backgroundColor: item.product.variants.find(v => v.id === item.variantId)?.colorHex 
+                                    }}
+                                  />
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {item.product.variants.find(v => v.id === item.variantId)?.colorName}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => removeFromCart(item.productId)}
+                              onClick={() => removeFromCart(item.productId, item.variantId)}
                               className="text-destructive hover:text-destructive shrink-0 h-8 w-8 sm:h-9 sm:w-9"
                             >
                               <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
@@ -330,7 +366,7 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                                 variant="outline"
                                 size="icon"
                                 className="h-7 w-7 sm:h-8 sm:w-8"
-                                onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                                onClick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
                               >
                                 <Minus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
@@ -339,8 +375,8 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                                 variant="outline"
                                 size="icon"
                                 className="h-7 w-7 sm:h-8 sm:w-8"
-                                onClick={() => updateQuantity(item.productId, item.quantity + 1)}
-                                disabled={item.quantity >= getTotalStock(item.product)}
+                                onClick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
+                                disabled={item.quantity >= (item.variantId ? (item.product.variants?.find(v => v.id === item.variantId)?.stock || 0) : item.product.baseStock)}
                               >
                                 <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                               </Button>
@@ -364,12 +400,28 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                   </CardHeader>
                   <CardContent className="space-y-4 p-4 sm:p-6 pt-0">
                     <div className="space-y-2">
-                      {items.map((item) => (
-                        <div key={item.productId} className="flex justify-between text-xs sm:text-sm">
-                          <span className="text-muted-foreground truncate pr-2">{item.product.name} × {item.quantity}</span>
-                          <span className="font-medium shrink-0">₦{(item.price * item.quantity).toLocaleString()}</span>
-                        </div>
-                      ))}
+                      {items.map((item) => {
+                        const variant = item.variantId && item.product.variants 
+                          ? item.product.variants.find(v => v.id === item.variantId)
+                          : null;
+                        return (
+                          <div key={`${item.productId}-${item.variantId || 'base'}`} className="flex justify-between text-xs sm:text-sm">
+                            <div className="text-muted-foreground truncate pr-2 flex-1 min-w-0">
+                              <div className="truncate">{item.product.name} × {item.quantity}</div>
+                              {variant && (
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  <div 
+                                    className="w-3 h-3 rounded border shrink-0"
+                                    style={{ backgroundColor: variant.colorHex }}
+                                  />
+                                  <span className="text-[10px]">{variant.colorName}</span>
+                                </div>
+                              )}
+                            </div>
+                            <span className="font-medium shrink-0 ml-2">₦{(item.price * item.quantity).toLocaleString()}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="border-t pt-4 space-y-2">
                       <div className="flex justify-between font-bold text-base sm:text-lg">
@@ -609,6 +661,20 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                     </Button>
                   </div>
                 </form>
+
+                {/* Payment Completed Section - shown after clicking Continue */}
+                {checkoutForm.name && checkoutForm.phone && checkoutForm.address && checkoutForm.city && checkoutForm.state && (
+                  <div className="mt-6 pt-6 border-t space-y-4">
+                    <Button
+                      type="button"
+                      className="w-full h-11 sm:h-12 bg-green-600 hover:bg-green-700 rounded-xl text-sm sm:text-base"
+                      onClick={handlePaymentCompleted}
+                    >
+                      <Check className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                      I Have Completed Payment
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="space-y-4 sm:space-y-6">

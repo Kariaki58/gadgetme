@@ -191,6 +191,12 @@ export default function StoreCatalogPage({ params }: { params: Promise<{ storeId
                     disabled={totalStock === 0}
                     onClick={(e) => {
                       e.stopPropagation();
+                      // If product has variants, redirect to product page for selection
+                      if (product.variants && product.variants.length > 0) {
+                        window.location.href = `/store/${storeId}/product/${product.id}`;
+                        return;
+                      }
+                      // Otherwise, add directly to cart
                       addToCart(product, 1);
                       toast({
                         title: "Added to Cart!",

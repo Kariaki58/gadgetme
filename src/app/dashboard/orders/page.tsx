@@ -154,7 +154,10 @@ export default function OrdersPage() {
     if (order.items && order.items.length > 0) {
       return order.items.map(item => {
         const product = products.find(p => p.id === item.productId);
-        return { product, quantity: item.quantity, price: item.price };
+        const variant = item.variantId && product 
+          ? product.variants?.find(v => v.id === item.variantId)
+          : null;
+        return { product, variant, quantity: item.quantity, price: item.price, variantId: item.variantId };
       }).filter(item => item.product);
     }
     return [];
@@ -262,7 +265,21 @@ export default function OrdersPage() {
                             <div className="space-y-1">
                               {items.map((item, idx) => (
                                 <div key={idx} className="text-sm text-muted-foreground">
-                                  • {item.product!.name} × {item.quantity} (₦{item.price.toLocaleString()} each)
+                                  <div className="flex items-center gap-2">
+                                    <span>• {item.product!.name}</span>
+                                    {item.variant && (
+                                      <div className="flex items-center gap-1">
+                                        <div 
+                                          className="w-3 h-3 rounded border shrink-0"
+                                          style={{ backgroundColor: item.variant.colorHex }}
+                                        />
+                                        <span className="text-xs">({item.variant.colorName})</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="ml-4 text-xs">
+                                    × {item.quantity} (₦{item.price.toLocaleString()} each)
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -325,7 +342,21 @@ export default function OrdersPage() {
                       </div>
                       <div className="text-sm space-y-1">
                         {items.slice(0, 2).map((item, idx) => (
-                          <p key={idx} className="text-muted-foreground">{item.product!.name} × {item.quantity}</p>
+                          <div key={idx} className="text-muted-foreground">
+                            <div className="flex items-center gap-1.5">
+                              <span>{item.product!.name}</span>
+                              {item.variant && (
+                                <div className="flex items-center gap-1">
+                                  <div 
+                                    className="w-2.5 h-2.5 rounded border shrink-0"
+                                    style={{ backgroundColor: item.variant.colorHex }}
+                                  />
+                                  <span className="text-[10px]">({item.variant.colorName})</span>
+                                </div>
+                              )}
+                              <span>× {item.quantity}</span>
+                            </div>
+                          </div>
                         ))}
                         {items.length > 2 && <p className="text-xs text-muted-foreground">+{items.length - 2} more</p>}
                       </div>
@@ -380,9 +411,21 @@ export default function OrdersPage() {
                           <TableCell>
                             <div className="space-y-1">
                               {items.slice(0, 2).map((item, idx) => (
-                                <p key={idx} className="text-sm">
-                                  {item.product!.name} × {item.quantity}
-                                </p>
+                                <div key={idx} className="text-sm">
+                                  <div className="flex items-center gap-1.5">
+                                    <span>{item.product!.name}</span>
+                                    {item.variant && (
+                                      <div className="flex items-center gap-1">
+                                        <div 
+                                          className="w-2.5 h-2.5 rounded border shrink-0"
+                                          style={{ backgroundColor: item.variant.colorHex }}
+                                        />
+                                        <span className="text-[10px]">({item.variant.colorName})</span>
+                                      </div>
+                                    )}
+                                    <span>× {item.quantity}</span>
+                                  </div>
+                                </div>
                               ))}
                               {items.length > 2 && (
                                 <p className="text-xs text-muted-foreground">+{items.length - 2} more</p>
