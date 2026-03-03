@@ -151,7 +151,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { 
       storeId, 
-      storeName,
+      storeName, 
       logoUrl,
       accountDetails,
       acceptsDelivery,

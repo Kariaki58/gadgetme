@@ -42,15 +42,18 @@ import { ProductVariant } from '@/types/store';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function ProductsPage() {
-  const { store, products, loading, addProduct, deleteProduct, createStore } = useStoreDataSupabase();
+  const { store, products, loading, addProduct, updateProduct, deleteProduct, createStore } = useStoreDataSupabase();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isAIGenerating, setIsAIGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isCreatingStore, setIsCreatingStore] = useState(false);
   const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+  const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
   const [storeName, setStoreName] = useState('');
 
   const [formData, setFormData] = useState({
@@ -265,6 +268,75 @@ export default function ProductsPage() {
     }
   };
 
+  const handleEditProduct = (product: typeof products[0]) => {
+    setEditingProductId(product.id);
+    setFormData({
+      name: product.name,
+      category: product.category,
+      description: product.description || '',
+      costPrice: product.costPrice,
+      sellingPrice: product.sellingPrice,
+      baseStock: product.baseStock,
+      imageUrls: product.imageUrls || [],
+      variants: product.variants || [],
+    });
+    setIsEditing(true);
+  };
+
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingProductId || !formData.name || !formData.category || !formData.costPrice || !formData.sellingPrice) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsUpdatingProduct(true);
+    try {
+      const success = await updateProduct(editingProductId, {
+        name: formData.name,
+        category: formData.category,
+        description: formData.description,
+        costPrice: Number(formData.costPrice),
+        sellingPrice: Number(formData.sellingPrice),
+        baseStock: Number(formData.baseStock),
+        imageUrls: formData.imageUrls,
+        variants: formData.variants,
+      });
+
+      if (success) {
+        setIsEditing(false);
+        setEditingProductId(null);
+        setFormData({ 
+          name: '', 
+          category: '', 
+          description: '', 
+          costPrice: 0, 
+          sellingPrice: 0, 
+          baseStock: 0,
+          imageUrls: [],
+          variants: [],
+        });
+        toast({ 
+          title: "Product Updated", 
+          description: "Product has been updated successfully." 
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update product. Please try again.",
+          variant: "destructive"
+        });
+      }
+    } finally {
+      setIsUpdatingProduct(false);
+    }
+  };
+
   const handleDeleteProduct = async (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
 
@@ -448,18 +520,18 @@ export default function ProductsPage() {
                     }}
                   >
                     <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                    <span className="text-sm text-muted-foreground">
-                      Click to upload images (up to {5 - formData.imageUrls.length} more)
-                    </span>
-                    <Input
+                      <span className="text-sm text-muted-foreground">
+                        Click to upload images (up to {5 - formData.imageUrls.length} more)
+                      </span>
+                      <Input
                       ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleImageUpload}
-                      disabled={isUploading || formData.imageUrls.length >= 5}
-                    />
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleImageUpload}
+                        disabled={isUploading || formData.imageUrls.length >= 5}
+                      />
                     {isUploading && (
                       <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
                     )}
@@ -647,6 +719,279 @@ export default function ProductsPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Product Dialog */}
+        <Dialog open={isEditing} onOpenChange={(open) => {
+          setIsEditing(open);
+          if (!open) {
+            setEditingProductId(null);
+            setFormData({ 
+              name: '', 
+              category: '', 
+              description: '', 
+              costPrice: 0, 
+              sellingPrice: 0, 
+              baseStock: 0,
+              imageUrls: [],
+              variants: [],
+            });
+          }
+        }}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Product</DialogTitle>
+              <DialogDescription>Update the details of your product below.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateProduct} className="space-y-4 py-4">
+              {/* Image Upload */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label>Product Images</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {formData.imageUrls.length}/5 images
+                  </span>
+                </div>
+                
+                {/* Display uploaded images */}
+                {formData.imageUrls.length > 0 && (
+                  <div className="grid grid-cols-5 gap-2 mb-3">
+                    {formData.imageUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={url} 
+                          alt={`Product ${index + 1}`} 
+                          className="w-full h-24 object-cover rounded-lg border"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => handleRemoveImage(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Upload area */}
+                {formData.imageUrls.length < 5 && (
+                  <div 
+                    className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-primary hover:bg-primary/5"
+                    onClick={() => fileInputRef.current?.click()}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                  >
+                    <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+                      <span className="text-sm text-muted-foreground">
+                        Click to upload images (up to {5 - formData.imageUrls.length} more)
+                      </span>
+                      <Input
+                      ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleImageUpload}
+                        disabled={isUploading || formData.imageUrls.length >= 5}
+                      />
+                    {isUploading && (
+                      <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
+                    )}
+                  </div>
+                )}
+                
+                {formData.imageUrls.length >= 5 && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    Maximum of 5 images reached. Remove an image to add more.
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Product Name *</Label>
+                  <Input 
+                    id="edit-name" 
+                    required 
+                    value={formData.name} 
+                    onChange={e => setFormData({...formData, name: e.target.value})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Category *</Label>
+                  <Input 
+                    id="edit-category" 
+                    placeholder="e.g. Smartphones" 
+                    required 
+                    value={formData.category} 
+                    onChange={e => setFormData({...formData, category: e.target.value})} 
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label htmlFor="edit-description">Description</Label>
+                </div>
+                <Textarea 
+                  id="edit-description" 
+                  rows={3} 
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})} 
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-costPrice">Cost Price (₦) *</Label>
+                  <Input 
+                    id="edit-costPrice" 
+                    type="number" 
+                    required 
+                    value={formData.costPrice} 
+                    onChange={e => setFormData({...formData, costPrice: Number(e.target.value)})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-sellingPrice">Selling Price (₦) *</Label>
+                  <Input 
+                    id="edit-sellingPrice" 
+                    type="number" 
+                    required 
+                    value={formData.sellingPrice} 
+                    onChange={e => setFormData({...formData, sellingPrice: Number(e.target.value)})} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-baseStock">Base Stock</Label>
+                  <Input 
+                    id="edit-baseStock" 
+                    type="number" 
+                    value={formData.baseStock} 
+                    onChange={e => setFormData({...formData, baseStock: Number(e.target.value)})} 
+                  />
+                  <p className="text-xs text-muted-foreground">Stock without color variants</p>
+                </div>
+              </div>
+
+              {/* Color Variants */}
+              <div className="space-y-3 border-t pt-4">
+                <div className="flex justify-between items-center">
+                  <Label>Color Variants</Label>
+                  <span className="text-sm text-muted-foreground">
+                    {formData.variants.length} variant{formData.variants.length !== 1 ? 's' : ''} added
+                  </span>
+                </div>
+                
+                {/* Add Variant Form */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-secondary/30 rounded-lg">
+                  <Input
+                    placeholder="Color name (e.g. Black)"
+                    value={newVariant.colorName}
+                    onChange={e => setNewVariant({...newVariant, colorName: e.target.value})}
+                  />
+                  <Input
+                    type="color"
+                    value={newVariant.colorHex}
+                    onChange={e => setNewVariant({...newVariant, colorHex: e.target.value})}
+                    className="h-10"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Stock"
+                    value={newVariant.stock || ''}
+                    onChange={e => setNewVariant({...newVariant, stock: Number(e.target.value)})}
+                    min="0"
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddVariant}
+                    className="bg-primary hover:bg-primary/90"
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </Button>
+                </div>
+
+                {/* Variants List */}
+                {formData.variants.length > 0 && (
+                  <div className="space-y-2">
+                    {formData.variants.map((variant, index) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-secondary/20 rounded-lg"
+                      >
+                        <div 
+                          className="w-8 h-8 rounded border"
+                          style={{ backgroundColor: variant.colorHex }}
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{variant.colorName}</p>
+                          <p className="text-sm text-muted-foreground">Stock: {variant.stock}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveVariant(index)}
+                          className="text-red-500 hover:text-red-600"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <DialogFooter>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setIsEditing(false);
+                    setEditingProductId(null);
+                    setFormData({ 
+                      name: '', 
+                      category: '', 
+                      description: '', 
+                      costPrice: 0, 
+                      sellingPrice: 0, 
+                      baseStock: 0,
+                      imageUrls: [],
+                      variants: [],
+                    });
+                  }}
+                  disabled={isUpdatingProduct}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-primary"
+                  disabled={isUpdatingProduct}
+                >
+                  {isUpdatingProduct ? (
+                    <>
+                      <Package className="mr-2 h-4 w-4 animate-spin" />
+                      Updating Product...
+                    </>
+                  ) : (
+                    'Update Product'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Card className="border-primary/10">
@@ -740,6 +1085,11 @@ export default function ProductsPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem 
+                              onClick={() => handleEditProduct(product)}
+                            >
+                              <Edit3 className="mr-2 h-4 w-4" /> Edit Product
+                            </DropdownMenuItem>
                             <DropdownMenuItem 
                               onClick={() => window.open(`/store/${store?.storeId}/product/${product.id}`, '_blank')}
                             >

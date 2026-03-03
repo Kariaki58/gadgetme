@@ -410,7 +410,7 @@ export default function Home() {
                     <span>See who sold what, when</span>
                   </li>
                 </ul>
-                <p className="text-sm text-muted-foreground italic mt-2">Monitor performance. See daily totals. Know your team's productivity.</p>
+                <p className="text-sm text-muted-foreground italic mt-2">Monitor performance. See daily totals. Track your business metrics.</p>
               </div>
 
               <div className="flex flex-col space-y-4 p-8 bg-white rounded-2xl shadow-lg border border-green-100 hover:shadow-xl transition-all">

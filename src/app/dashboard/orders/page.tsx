@@ -560,23 +560,23 @@ export default function OrdersPage() {
                           <Download className="mr-2 h-4 w-4" />
                           Download Receipt
                         </Button>
-                        <div className="flex items-center gap-2">
-                          {updatingOrders.has(order.id) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                          <Select
-                            value={order.orderStatus}
-                            onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
-                            disabled={updatingOrders.has(order.id)}
-                          >
-                            <SelectTrigger className="flex-1">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="paid">Paid</SelectItem>
-                              <SelectItem value="packaged">Packaged</SelectItem>
-                              <SelectItem value="shipped">Shipped</SelectItem>
-                              <SelectItem value="delivered">Delivered</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      <div className="flex items-center gap-2">
+                        {updatingOrders.has(order.id) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                        <Select
+                          value={order.orderStatus}
+                          onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
+                          disabled={updatingOrders.has(order.id)}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="packaged">Packaged</SelectItem>
+                            <SelectItem value="shipped">Shipped</SelectItem>
+                            <SelectItem value="delivered">Delivered</SelectItem>
+                          </SelectContent>
+                        </Select>
                         </div>
                       </div>
                     </div>

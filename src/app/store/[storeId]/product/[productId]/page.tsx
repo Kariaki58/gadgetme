@@ -205,7 +205,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
       setReceiptProduct(product);
       setReceiptCheckoutForm({ ...checkoutForm });
       
-      setPaymentCompleted(true);
+    setPaymentCompleted(true);
       setShowReceipt(true);
       
       // Open WhatsApp with pre-filled message
@@ -656,8 +656,8 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 sm:pb-6">
                   <p className="text-sm sm:text-base text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                    {product.description || 'Detailed specifications for this gadget are available upon request.'}
-                  </p>
+                {product.description || 'Detailed specifications for this gadget are available upon request.'}
+              </p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -674,7 +674,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
                     const isOutOfStock = variant.stock === 0;
                     return (
                       <button
-                        key={variant.id}
+                      key={variant.id}
                         type="button"
                         onClick={() => {
                           if (!isOutOfStock) {
@@ -690,17 +690,17 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
                             ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
                             : 'border-primary/10 hover:border-primary/30 cursor-pointer'
                         }`}
-                      >
-                        <div 
+                    >
+                      <div 
                           className="w-6 h-6 sm:w-8 sm:h-8 rounded border"
-                          style={{ backgroundColor: variant.colorHex }}
-                        />
+                        style={{ backgroundColor: variant.colorHex }}
+                      />
                         <div className="flex flex-col items-start">
                           <span className="text-xs sm:text-sm font-medium">{variant.colorName}</span>
                           <span className="text-[10px] sm:text-xs text-muted-foreground">
                             {isOutOfStock ? 'Out of stock' : `(${variant.stock} in stock)`}
                           </span>
-                        </div>
+                    </div>
                         {isSelected && (
                           <Check className="h-4 w-4 text-primary" />
                         )}
@@ -814,20 +814,20 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
               <div className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <h3 className="text-xl sm:text-2xl font-bold">Complete Your Purchase</h3>
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                <Button
+                  variant="ghost"
+                  size="icon"
                     className="shrink-0"
-                    onClick={() => {
-                      setIsCheckingOut(false);
-                      setPaymentCompleted(false);
-                      setReceiptFile(null);
-                      setReceiptPreview(null);
-                    }}
-                  >
-                    <X className="h-5 w-5" />
-                  </Button>
-                </div>
+                  onClick={() => {
+                    setIsCheckingOut(false);
+                    setPaymentCompleted(false);
+                    setReceiptFile(null);
+                    setReceiptPreview(null);
+                  }}
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
 
               {!paymentCompleted ? (
                 <>
@@ -1059,7 +1059,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
                           </>
                         ) : (
                           <>
-                            <Check className="mr-2 h-5 w-5" />
+                        <Check className="mr-2 h-5 w-5" />
                             I Have Made the Payment
                           </>
                         )}
@@ -1070,87 +1070,87 @@ export default function ProductDetailPage({ params }: { params: Promise<{ storeI
               ) : (
                 showReceipt ? (
                   <OrderReceipt />
-                ) : (
-                  <div className="space-y-6">
-                    <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
-                      <div className="flex items-center gap-2 text-green-700">
-                        <Check className="h-5 w-5" />
-                        <p className="font-bold">Payment Completed!</p>
-                      </div>
-                      <p className="text-sm text-green-600 mt-2">
-                        Now upload your transaction receipt and contact the seller via WhatsApp.
-                      </p>
+              ) : (
+                <div className="space-y-6">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="flex items-center gap-2 text-green-700">
+                      <Check className="h-5 w-5" />
+                      <p className="font-bold">Payment Completed!</p>
                     </div>
-
-                    {/* Receipt Upload */}
-                    <div className="space-y-2">
-                      <Label>Transaction Receipt</Label>
-                      <div className="border-2 border-dashed rounded-xl p-6 text-center">
-                        {receiptPreview ? (
-                          <div className="space-y-4">
-                            <img 
-                              src={receiptPreview} 
-                              alt="Receipt preview" 
-                              className="max-h-48 mx-auto rounded-lg"
-                            />
-                            <div className="flex gap-2 justify-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setReceiptFile(null);
-                                  setReceiptPreview(null);
-                                }}
-                              >
-                                <X className="mr-2 h-4 w-4" />
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                            <div>
-                              <Label htmlFor="receipt-upload" className="cursor-pointer">
-                                <span className="text-primary font-medium">Click to upload</span> or drag and drop
-                              </Label>
-                              <Input
-                                id="receipt-upload"
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleReceiptUpload}
-                              />
-                              <p className="text-xs text-muted-foreground mt-2">
-                                PNG, JPG up to 10MB
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* WhatsApp Button */}
-                    <Button
-                      type="button"
-                      className="w-full h-12 bg-green-500 hover:bg-green-600 rounded-xl"
-                      onClick={openWhatsApp}
-                      disabled={!store?.whatsappNumber}
-                    >
-                      <MessageCircle className="mr-2 h-5 w-5" />
-                      Contact Seller on WhatsApp
-                    </Button>
-
-                    {!store?.whatsappNumber && (
-                      <p className="text-xs text-muted-foreground text-center">
-                        WhatsApp number not configured by seller
-                      </p>
-                    )}
+                    <p className="text-sm text-green-600 mt-2">
+                      Now upload your transaction receipt and contact the seller via WhatsApp.
+                    </p>
                   </div>
+
+                  {/* Receipt Upload */}
+                  <div className="space-y-2">
+                    <Label>Transaction Receipt</Label>
+                    <div className="border-2 border-dashed rounded-xl p-6 text-center">
+                      {receiptPreview ? (
+                        <div className="space-y-4">
+                          <img 
+                            src={receiptPreview} 
+                            alt="Receipt preview" 
+                            className="max-h-48 mx-auto rounded-lg"
+                          />
+                          <div className="flex gap-2 justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setReceiptFile(null);
+                                setReceiptPreview(null);
+                              }}
+                            >
+                              <X className="mr-2 h-4 w-4" />
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+                          <div>
+                            <Label htmlFor="receipt-upload" className="cursor-pointer">
+                              <span className="text-primary font-medium">Click to upload</span> or drag and drop
+                            </Label>
+                            <Input
+                              id="receipt-upload"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={handleReceiptUpload}
+                            />
+                            <p className="text-xs text-muted-foreground mt-2">
+                              PNG, JPG up to 10MB
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Button */}
+                  <Button
+                    type="button"
+                    className="w-full h-12 bg-green-500 hover:bg-green-600 rounded-xl"
+                    onClick={openWhatsApp}
+                    disabled={!store?.whatsappNumber}
+                  >
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Contact Seller on WhatsApp
+                  </Button>
+
+                  {!store?.whatsappNumber && (
+                    <p className="text-xs text-muted-foreground text-center">
+                      WhatsApp number not configured by seller
+                    </p>
+                  )}
+                </div>
                 )
               )}
-              </div>
-            </Card>
+            </div>
+          </Card>
           </div>
         </div>
       )}
