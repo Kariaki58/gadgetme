@@ -28,7 +28,7 @@ interface Store {
 
 export function useStoreDataSupabaseAuth() {
   const supabase = createClient();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [store, setStore] = useState<Store | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -37,7 +37,17 @@ export function useStoreDataSupabaseAuth() {
 
   // Load store data
   const loadStoreData = useCallback(async () => {
+    // Wait for auth to finish loading
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     if (!user) {
+      setStore(null);
+      setProducts([]);
+      setOrders([]);
+      setPosTransactions([]);
       setLoading(false);
       return;
     }
@@ -172,7 +182,7 @@ export function useStoreDataSupabaseAuth() {
     } finally {
       setLoading(false);
     }
-  }, [user, supabase]);
+  }, [user, authLoading, supabase]);
 
   useEffect(() => {
     loadStoreData();

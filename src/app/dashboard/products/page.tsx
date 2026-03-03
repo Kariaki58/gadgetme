@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useStoreDataSupabase } from '@/hooks/use-store-data-supabase';
 import { generateProductDescription } from '@/ai/flows/generate-product-description';
 import { Button } from '@/components/ui/button';
@@ -69,6 +69,8 @@ export default function ProductsPage() {
     colorHex: '#000000',
     stock: 0,
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -433,22 +435,31 @@ export default function ProductsPage() {
 
                 {/* Upload area */}
                 {formData.imageUrls.length < 5 && (
-                  <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                  <div 
+                    className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors hover:border-primary hover:bg-primary/5"
+                    onClick={() => fileInputRef.current?.click()}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                  >
                     <ImageIcon className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                    <Label htmlFor="image-upload" className="cursor-pointer">
-                      <span className="text-sm text-muted-foreground">
-                        Click to upload images (up to {5 - formData.imageUrls.length} more)
-                      </span>
-                      <Input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        className="hidden"
-                        onChange={handleImageUpload}
-                        disabled={isUploading || formData.imageUrls.length >= 5}
-                      />
-                    </Label>
+                    <span className="text-sm text-muted-foreground">
+                      Click to upload images (up to {5 - formData.imageUrls.length} more)
+                    </span>
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleImageUpload}
+                      disabled={isUploading || formData.imageUrls.length >= 5}
+                    />
                     {isUploading && (
                       <p className="text-sm text-muted-foreground mt-2">Uploading...</p>
                     )}
