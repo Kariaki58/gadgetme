@@ -11,6 +11,7 @@ interface Store {
   storeId: string; // Short ID for public URLs
   storeName: string;
   ownerEmail: string;
+  logoUrl?: string;
   accountDetails?: {
     bankName: string;
     accountNumber: string;
@@ -62,6 +63,7 @@ export function useStoreDataSupabaseAuth() {
         storeId: storeData.store_id,
         storeName: storeData.store_name,
         ownerEmail: storeData.owner_email,
+        logoUrl: storeData.logo_url,
         accountDetails: storeData.account_bank_name ? {
           bankName: storeData.account_bank_name,
           accountNumber: storeData.account_number,

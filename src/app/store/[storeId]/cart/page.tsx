@@ -52,6 +52,7 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptItems, setReceiptItems] = useState<Array<any>>([]);
   const [receiptCheckoutForm, setReceiptCheckoutForm] = useState<any>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
   const countryOptions = CountrySelect().getData();
   const [checkoutForm, setCheckoutForm] = useState({
@@ -132,7 +133,9 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
   };
 
   const handlePaymentCompleted = async () => {
-    if (!store || items.length === 0) return;
+    if (!store || items.length === 0 || isProcessingPayment) return;
+
+    setIsProcessingPayment(true);
 
     try {
       // Create order in database
@@ -163,7 +166,8 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create order');
       }
 
       const data = await response.json();
@@ -187,13 +191,15 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
         title: "Order Placed Successfully!",
         description: "Your order has been created. Opening WhatsApp to contact the seller.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating order:', error);
       toast({
         title: "Error",
-        description: "Failed to save order. Please try again.",
+        description: error.message || "Failed to save order. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -886,9 +892,19 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                         type="button"
                         className="w-full h-11 sm:h-12 bg-green-600 hover:bg-green-700 rounded-xl text-sm sm:text-base"
                         onClick={handlePaymentCompleted}
+                        disabled={isProcessingPayment}
                       >
-                        <Check className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                        I Have Made the Payment
+                        {isProcessingPayment ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                            I Have Made the Payment
+                          </>
+                        )}
                       </Button>
                     </div>
                   );

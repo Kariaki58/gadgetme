@@ -45,6 +45,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create order
+    // Note: delivery_method column needs to be added via migration
+    // Run: supabase/migrations/add_delivery_method.sql
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
@@ -55,7 +57,7 @@ export async function POST(request: NextRequest) {
         delivery_city: deliveryCity || null,
         delivery_state: deliveryState || null,
         delivery_country: deliveryCountry || null,
-        delivery_method: deliveryMethod || 'delivery',
+        // delivery_method: deliveryMethod || 'delivery', // Uncomment after running migration
         total_amount: totalAmount,
         status: 'pending',
         payment_status: 'pending',

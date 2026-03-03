@@ -151,7 +151,8 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { 
       storeId, 
-      storeName, 
+      storeName,
+      logoUrl,
       accountDetails,
       acceptsDelivery,
       acceptsPickup,
@@ -180,6 +181,7 @@ export async function PUT(request: NextRequest) {
     };
 
     if (storeName !== undefined) updateData.store_name = storeName;
+    if (logoUrl !== undefined) updateData.logo_url = logoUrl;
     if (accountDetails?.bankName !== undefined) updateData.account_bank_name = accountDetails.bankName;
     if (accountDetails?.accountNumber !== undefined) updateData.account_number = accountDetails.accountNumber;
     if (accountDetails?.accountName !== undefined) updateData.account_name = accountDetails.accountName;

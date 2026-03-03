@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Save, Check, CreditCard, Calendar, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Loader2, Save, Check, CreditCard, Calendar, CheckCircle2, AlertTriangle, Upload, Image as ImageIcon, X } from 'lucide-react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -22,6 +22,7 @@ export default function SettingsPage() {
   
   const [formData, setFormData] = useState({
     storeName: '',
+    logoUrl: '',
     accountDetails: {
       bankName: '',
       accountNumber: '',
@@ -35,11 +36,15 @@ export default function SettingsPage() {
     city: '',
     state: '',
   });
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (store) {
       setFormData({
         storeName: store.storeName || '',
+        logoUrl: (store as any).logoUrl || '',
         accountDetails: {
           bankName: store.accountDetails?.bankName || '',
           accountNumber: store.accountDetails?.accountNumber || '',
@@ -53,8 +58,79 @@ export default function SettingsPage() {
         city: (store as any).city || '',
         state: (store as any).state || '',
       });
+      if ((store as any).logoUrl) {
+        setLogoPreview((store as any).logoUrl);
+      }
     }
   }, [store]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file (PNG, JPG, etc.)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLogoFile(file);
+    setUploadingLogo(true);
+
+    try {
+      // Upload to server API endpoint
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const response = await fetch('/api/upload/logo', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to upload logo');
+      }
+
+      const data = await response.json();
+      setFormData(prev => ({ ...prev, logoUrl: data.url }));
+      setLogoPreview(data.url);
+      
+      toast({
+        title: "Logo uploaded!",
+        description: "Don't forget to save your settings to keep the logo.",
+      });
+    } catch (error: any) {
+      console.error('Error uploading logo:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload logo. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoFile(null);
+    setLogoPreview(null);
+    setFormData(prev => ({ ...prev, logoUrl: '' }));
+  };
 
   // Handle payment success redirect
   useEffect(() => {
@@ -87,6 +163,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           storeId: store.id,
           storeName: formData.storeName,
+          logoUrl: formData.logoUrl,
           accountDetails: formData.accountDetails,
           acceptsDelivery: formData.acceptsDelivery,
           acceptsPickup: formData.acceptsPickup,
@@ -161,6 +238,80 @@ export default function SettingsPage() {
                   onChange={(e) => setFormData({ ...formData, storeName: e.target.value })}
                   required
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="logo">Store Logo</Label>
+                <div className="space-y-3">
+                  {logoPreview ? (
+                    <div className="relative inline-block">
+                      <img 
+                        src={logoPreview} 
+                        alt="Store logo" 
+                        className="h-24 w-24 object-cover rounded-lg border-2 border-primary/20"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                        onClick={handleRemoveLogo}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                      <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                      <p className="text-sm text-muted-foreground mb-2">Upload your store logo</p>
+                      <Label htmlFor="logo-upload" className="cursor-pointer">
+                        <Button type="button" variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Choose Image
+                          </span>
+                        </Button>
+                      </Label>
+                      <Input
+                        id="logo-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                        disabled={uploadingLogo}
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">PNG, JPG up to 5MB</p>
+                    </div>
+                  )}
+                  {logoPreview && (
+                    <div>
+                      <Label htmlFor="logo-upload-change" className="cursor-pointer">
+                        <Button type="button" variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Change Logo
+                          </span>
+                        </Button>
+                      </Label>
+                      <Input
+                        id="logo-upload-change"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                        disabled={uploadingLogo}
+                      />
+                    </div>
+                  )}
+                  {uploadingLogo && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Uploading logo...
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Your logo will appear on receipts and invoices
+                </p>
               </div>
             </CardContent>
           </Card>

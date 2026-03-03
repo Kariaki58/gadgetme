@@ -21,8 +21,10 @@ import {
   ShoppingCart,
   User,
   Phone,
-  Loader2
+  Loader2,
+  Download
 } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { useToast } from '@/hooks/use-toast';
 import { Order } from '@/types/store';
 
@@ -161,6 +163,194 @@ export default function OrdersPage() {
       }).filter(item => item.product);
     }
     return [];
+  };
+
+  const downloadOrderReceipt = async (order: Order) => {
+    if (!store || !order) return;
+
+    try {
+      const items = getOrderItems(order);
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      let yPos = margin;
+
+      // Load and add store logo if available (at top right)
+      const storeLogoUrl = (store as any).logoUrl;
+      let logoAdded = false;
+      if (storeLogoUrl) {
+        try {
+          // Fetch image and convert to base64
+          const response = await fetch(storeLogoUrl);
+          if (response.ok) {
+            const blob = await response.blob();
+            const reader = new FileReader();
+            
+            await new Promise((resolve, reject) => {
+              reader.onload = () => {
+                try {
+                  const logoWidth = 50;
+                  const logoHeight = 50; // Square logo
+                  const logoX = pageWidth - margin - logoWidth;
+                  const logoY = margin;
+                  // Try to detect image format from the data URL or default to PNG
+                  const imageFormat = storeLogoUrl.toLowerCase().includes('.jpg') || storeLogoUrl.toLowerCase().includes('.jpeg') ? 'JPEG' : 'PNG';
+                  doc.addImage(reader.result as string, imageFormat, logoX, logoY, logoWidth, logoHeight);
+                  logoAdded = true;
+                  resolve(null);
+                } catch (error) {
+                  console.warn('Could not add logo to PDF:', error);
+                  resolve(null); // Continue without logo
+                }
+              };
+              reader.onerror = () => resolve(null); // Continue without logo on error
+              reader.readAsDataURL(blob);
+              setTimeout(() => resolve(null), 5000); // Timeout but don't fail
+            });
+          }
+        } catch (error) {
+          console.warn('Could not load logo:', error);
+          // Continue without logo
+        }
+      }
+
+      // Store Name and Header (centered, or left-aligned if logo exists)
+      doc.setFontSize(20);
+      doc.setTextColor(100, 100, 255);
+      if (logoAdded) {
+        // If logo is on the right, align store name to the left
+        doc.text(store.storeName, margin, yPos + 25);
+      } else {
+        doc.text(store.storeName, pageWidth / 2, yPos, { align: 'center' });
+      }
+      yPos += logoAdded ? 35 : 15;
+
+      // Receipt Title
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text('ORDER RECEIPT', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 10;
+
+      // Order Info
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Order ID: ${order.id.slice(0, 8).toUpperCase()}`, margin, yPos);
+      yPos += 6;
+      doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`, margin, yPos);
+      yPos += 6;
+      doc.text(`Payment Date: ${order.paymentConfirmedAt ? new Date(order.paymentConfirmedAt).toLocaleString() : 'N/A'}`, margin, yPos);
+      yPos += 6;
+      doc.setFontSize(10);
+      doc.setTextColor(0, 150, 0);
+      doc.text('Status: Payment Confirmed', margin, yPos);
+      yPos += 15;
+
+      // Store Information
+      if (store.address || store.city || store.state) {
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Store Information:', margin, yPos);
+        yPos += 6;
+        if (store.address) {
+          doc.text(`Address: ${store.address}`, margin, yPos);
+          yPos += 6;
+        }
+        if (store.city || store.state) {
+          doc.text(`${store.city || ''}${store.city && store.state ? ', ' : ''}${store.state || ''}`, margin, yPos);
+          yPos += 6;
+        }
+        if ((store as any).whatsappNumber) {
+          doc.text(`WhatsApp: ${(store as any).whatsappNumber}`, margin, yPos);
+          yPos += 6;
+        }
+        yPos += 5;
+      }
+
+      // Customer Info
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Customer Information', margin, yPos);
+      yPos += 7;
+      doc.setFontSize(10);
+      doc.text(`Name: ${order.customerName}`, margin, yPos);
+      yPos += 6;
+      doc.text(`Phone: ${order.customerPhone}`, margin, yPos);
+      yPos += 6;
+      
+      // Delivery info
+      const deliveryMethod = (order as any).deliveryMethod || 'delivery';
+      doc.text(`Delivery Method: ${deliveryMethod === 'delivery' ? 'Delivery' : 'Pickup'}`, margin, yPos);
+      yPos += 6;
+      
+      if (deliveryMethod === 'delivery' && (order as any).deliveryAddress) {
+        doc.text(`Address: ${(order as any).deliveryAddress}`, margin, yPos);
+        yPos += 6;
+        if ((order as any).deliveryCity || (order as any).deliveryState) {
+          doc.text(`${(order as any).deliveryCity || ''}${(order as any).deliveryCity && (order as any).deliveryState ? ', ' : ''}${(order as any).deliveryState || ''}`, margin, yPos);
+          yPos += 6;
+        }
+        if ((order as any).deliveryCountry) {
+          doc.text(`Country: ${(order as any).deliveryCountry}`, margin, yPos);
+          yPos += 6;
+        }
+      }
+      yPos += 10;
+
+      // Items
+      doc.setFontSize(12);
+      doc.text('Order Items', margin, yPos);
+      yPos += 7;
+      doc.setFontSize(10);
+      
+      items.forEach((item) => {
+        const variantText = item.variant ? ` (${item.variant.colorName})` : '';
+        const itemText = `${item.product!.name}${variantText} × ${item.quantity}`;
+        const priceText = `₦${(item.price * item.quantity).toLocaleString()}`;
+        
+        doc.text(itemText, margin, yPos);
+        doc.text(priceText, pageWidth - margin, yPos, { align: 'right' });
+        yPos += 6;
+      });
+
+      yPos += 5;
+      doc.setDrawColor(200, 200, 200);
+      doc.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 8;
+
+      // Total
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('Total Amount:', margin, yPos);
+      doc.text(`₦${order.totalAmount.toLocaleString()}`, pageWidth - margin, yPos, { align: 'right' });
+      yPos += 15;
+
+      // Footer
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(150, 150, 150);
+      doc.text('Thank you for your purchase!', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 5;
+      doc.text('This is an official receipt from ' + store.storeName, pageWidth / 2, yPos, { align: 'center' });
+      yPos += 5;
+      if ((store as any).whatsappNumber) {
+        doc.text(`Contact us: ${(store as any).whatsappNumber}`, pageWidth / 2, yPos, { align: 'center' });
+      }
+
+      // Save PDF
+      doc.save(`receipt-${order.id.slice(0, 8)}-${store.storeName.replace(/\s+/g, '-')}.pdf`);
+      
+      toast({
+        title: "Receipt Downloaded",
+        description: "The receipt has been downloaded successfully.",
+      });
+    } catch (error: any) {
+      console.error('Error generating receipt:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate receipt. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -360,23 +550,34 @@ export default function OrdersPage() {
                         ))}
                         {items.length > 2 && <p className="text-xs text-muted-foreground">+{items.length - 2} more</p>}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {updatingOrders.has(order.id) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-                        <Select
-                          value={order.orderStatus}
-                          onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
-                          disabled={updatingOrders.has(order.id)}
+                      <div className="space-y-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => downloadOrderReceipt(order)}
                         >
-                          <SelectTrigger className="flex-1">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="paid">Paid</SelectItem>
-                            <SelectItem value="packaged">Packaged</SelectItem>
-                            <SelectItem value="shipped">Shipped</SelectItem>
-                            <SelectItem value="delivered">Delivered</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <Download className="mr-2 h-4 w-4" />
+                          Download Receipt
+                        </Button>
+                        <div className="flex items-center gap-2">
+                          {updatingOrders.has(order.id) && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
+                          <Select
+                            value={order.orderStatus}
+                            onValueChange={(value: Order['orderStatus']) => handleStatusUpdate(order.id, value)}
+                            disabled={updatingOrders.has(order.id)}
+                          >
+                            <SelectTrigger className="flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="paid">Paid</SelectItem>
+                              <SelectItem value="packaged">Packaged</SelectItem>
+                              <SelectItem value="shipped">Shipped</SelectItem>
+                              <SelectItem value="delivered">Delivered</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                     </div>
                   );
@@ -456,7 +657,16 @@ export default function OrdersPage() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => downloadOrderReceipt(order)}
+                                className="shrink-0"
+                              >
+                                <Download className="mr-2 h-4 w-4" />
+                                Receipt
+                              </Button>
                               {order.orderStatus === 'paid' && (
                                 <Badge variant="outline" className="bg-blue-50 text-blue-700">
                                   <Package className="h-3 w-3 mr-1" /> Ready to Package
