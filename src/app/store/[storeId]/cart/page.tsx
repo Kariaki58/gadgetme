@@ -3,7 +3,7 @@
 import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronLeft, ShoppingCart, Trash2, Plus, Minus, CreditCard, Copy, Check, MessageCircle, Upload, X, Loader2 } from 'lucide-react';
+import { ChevronLeft, ShoppingCart, Trash2, Plus, Minus, CreditCard, Copy, Check, MessageCircle, Upload, X, Loader2, Download, Package, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,6 +15,7 @@ import { getTotalStock } from '@/lib/supabase/transformers';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 // @ts-ignore - react-select-country-list doesn't have types
 import CountrySelect from 'react-select-country-list';
+import jsPDF from 'jspdf';
 
 interface Store {
   id: string;
@@ -47,6 +48,10 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const [receiptItems, setReceiptItems] = useState<Array<any>>([]);
+  const [receiptCheckoutForm, setReceiptCheckoutForm] = useState<any>(null);
   
   const countryOptions = CountrySelect().getData();
   const [checkoutForm, setCheckoutForm] = useState({
@@ -56,6 +61,7 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
     city: '',
     state: '',
     country: '',
+    deliveryMethod: 'delivery' as 'pickup' | 'delivery',
   });
 
   useEffect(() => {
@@ -146,10 +152,11 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
           storeId: store.id,
           customerName: checkoutForm.name,
           customerPhone: checkoutForm.phone,
-          deliveryAddress: checkoutForm.address,
-          deliveryCity: checkoutForm.city,
-          deliveryState: checkoutForm.state,
-          deliveryCountry: checkoutForm.country,
+          deliveryAddress: checkoutForm.deliveryMethod === 'delivery' ? checkoutForm.address : null,
+          deliveryCity: checkoutForm.deliveryMethod === 'delivery' ? checkoutForm.city : null,
+          deliveryState: checkoutForm.deliveryMethod === 'delivery' ? checkoutForm.state : null,
+          deliveryCountry: checkoutForm.deliveryMethod === 'delivery' ? checkoutForm.country : null,
+          deliveryMethod: checkoutForm.deliveryMethod,
           items: orderItems,
           totalAmount: getTotal(),
         }),
@@ -159,13 +166,26 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
         throw new Error('Failed to create order');
       }
 
+      const data = await response.json();
+      setOrderId(data.orderId);
+      
+      // Save items and form data for receipt before clearing cart
+      setReceiptItems([...items]);
+      setReceiptCheckoutForm({ ...checkoutForm });
+      
       setPaymentCompleted(true);
+      setShowReceipt(true);
+      
       // Clear the cart after payment is completed
       clearCart();
+      
+      // Open WhatsApp with pre-filled message
+      openWhatsApp();
+      
       // Show success message
       toast({
-        title: "Payment Completed!",
-        description: "Your order has been received. Please contact the seller via WhatsApp to complete your order.",
+        title: "Order Placed Successfully!",
+        description: "Your order has been created. Opening WhatsApp to contact the seller.",
       });
     } catch (error) {
       console.error('Error creating order:', error);
@@ -200,21 +220,21 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
       return `${item.product.name}${variantText} × ${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}`;
     }).join('\n');
 
+    const deliveryInfo = checkoutForm.deliveryMethod === 'delivery' 
+      ? `Delivery Address:\n${checkoutForm.address}\n${checkoutForm.city}, ${checkoutForm.state}\n${checkoutForm.country}`
+      : 'Pickup: I will pick up from your store';
+
     const orderDetails = [
       `Order Items:`,
       orderItems,
       `Total Amount: ₦${getTotal().toLocaleString()}`,
       `Customer Name: ${checkoutForm.name}`,
       `Customer Phone: ${checkoutForm.phone}`,
-      `Address: ${checkoutForm.address}`,
-      `City: ${checkoutForm.city}`,
-      `State: ${checkoutForm.state}`,
-      `Country: ${checkoutForm.country}`,
+      `Delivery Method: ${checkoutForm.deliveryMethod === 'delivery' ? 'Delivery' : 'Pickup'}`,
+      deliveryInfo,
     ].join('\n\n');
 
-    const locationDetails = `Here's my location:\n${checkoutForm.address}, ${checkoutForm.city}, ${checkoutForm.state}, ${checkoutForm.country}`;
-
-    const message = `Hello! I have made an order:\n\n${orderDetails}\n\n${locationDetails}\n\nHow much do you charge for delivery?\n\nHere's my transaction receipt:`;
+    const message = `Hello! I have made an order:\n\n${orderDetails}\n\n${checkoutForm.deliveryMethod === 'delivery' ? 'How much do you charge for delivery?' : 'When can I pick up my order?'}\n\nHere's my transaction receipt:`;
     
     return encodeURIComponent(message);
   };
@@ -242,6 +262,151 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
       description: `${field} copied to clipboard`,
     });
     setTimeout(() => setCopiedField(null), 2000);
+  };
+
+
+  // Order Receipt Component
+  const OrderReceipt = ({ 
+    orderId, 
+    store, 
+    items, 
+    checkoutForm, 
+    totalAmount, 
+    onDownloadPDF, 
+    onContinueShopping 
+  }: {
+    orderId: string;
+    store: Store | null;
+    items: Array<any>;
+    checkoutForm: any;
+    totalAmount: number;
+    onDownloadPDF: () => void;
+    onContinueShopping: () => void;
+  }) => {
+    if (!store) return null;
+
+    return (
+      <div className="space-y-4 sm:space-y-6">
+        <div className="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-xl">
+          <div className="flex items-center gap-2 text-green-700">
+            <Check className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+            <p className="font-bold text-sm sm:text-base">Order Placed Successfully!</p>
+          </div>
+          <p className="text-xs sm:text-sm text-green-600 mt-2">
+            Your order has been created and WhatsApp has been opened. You can download your receipt below.
+          </p>
+        </div>
+
+        {/* Receipt */}
+        <Card className="border-primary/20 bg-white">
+          <CardHeader className="p-4 sm:p-6 border-b">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg sm:text-xl">Order Receipt</CardTitle>
+              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                Pending
+              </Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 space-y-6">
+            {/* Order Info */}
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Order ID:</span>
+                <span className="font-mono font-medium">{orderId.slice(0, 8).toUpperCase()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Date:</span>
+                <span>{new Date().toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Status:</span>
+                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                  Pending
+                </Badge>
+              </div>
+            </div>
+
+            {/* Customer Info */}
+            <div className="pt-4 border-t space-y-2">
+              <h3 className="font-bold text-sm">Customer Information</h3>
+              <div className="text-sm space-y-1">
+                <p><span className="text-muted-foreground">Name:</span> {checkoutForm.name}</p>
+                <p><span className="text-muted-foreground">Phone:</span> {checkoutForm.phone}</p>
+                <p><span className="text-muted-foreground">Delivery Method:</span> {checkoutForm.deliveryMethod === 'delivery' ? 'Delivery' : 'Pickup'}</p>
+                {checkoutForm.deliveryMethod === 'delivery' && (
+                  <>
+                    <p><span className="text-muted-foreground">Address:</span> {checkoutForm.address}</p>
+                    <p><span className="text-muted-foreground">City:</span> {checkoutForm.city}, {checkoutForm.state}</p>
+                    <p><span className="text-muted-foreground">Country:</span> {checkoutForm.country}</p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Items */}
+            <div className="pt-4 border-t space-y-3">
+              <h3 className="font-bold text-sm">Order Items</h3>
+              <div className="space-y-2">
+                {items.map((item) => {
+                  const variant = item.variantId && item.product.variants 
+                    ? item.product.variants.find(v => v.id === item.variantId)
+                    : null;
+                  return (
+                    <div key={`${item.productId}-${item.variantId || 'base'}`} className="flex justify-between text-sm">
+                      <div className="flex-1">
+                        <p className="font-medium">{item.product.name}</p>
+                        {variant && (
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <div 
+                              className="w-3 h-3 rounded border shrink-0"
+                              style={{ backgroundColor: variant.colorHex }}
+                            />
+                            <span className="text-xs text-muted-foreground">{variant.colorName}</span>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">× {item.quantity}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">₦{(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">₦{item.price.toLocaleString()} each</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Total */}
+            <div className="pt-4 border-t">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-lg">Total Amount:</span>
+                <span className="font-bold text-xl text-primary">₦{totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="flex-1 h-11 sm:h-12"
+            onClick={onDownloadPDF}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download Receipt (PDF)
+          </Button>
+          <Button
+            type="button"
+            className="flex-1 h-11 sm:h-12 bg-primary"
+            onClick={onContinueShopping}
+          >
+            Continue Shopping
+          </Button>
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
@@ -492,56 +657,95 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Input
-                          id="address"
-                          required
-                          value={checkoutForm.address}
-                          onChange={(e) => setCheckoutForm({ ...checkoutForm, address: e.target.value })}
-                          placeholder="Enter your street address"
-                        />
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="city">City</Label>
-                          <Input
-                            id="city"
-                            required
-                            value={checkoutForm.city}
-                            onChange={(e) => setCheckoutForm({ ...checkoutForm, city: e.target.value })}
-                            placeholder="Enter your city"
-                          />
+                        <Label>Delivery Method</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setCheckoutForm({ ...checkoutForm, deliveryMethod: 'delivery' })}
+                            className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                              checkoutForm.deliveryMethod === 'delivery'
+                                ? 'border-primary bg-primary/5'
+                                : 'border-primary/20 hover:border-primary/40'
+                            }`}
+                          >
+                            <Truck className={`h-5 w-5 ${checkoutForm.deliveryMethod === 'delivery' ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <div className="text-left">
+                              <div className={`font-medium ${checkoutForm.deliveryMethod === 'delivery' ? 'text-primary' : ''}`}>Delivery</div>
+                              <div className="text-xs text-muted-foreground">Ship to my address</div>
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setCheckoutForm({ ...checkoutForm, deliveryMethod: 'pickup' })}
+                            className={`p-4 rounded-xl border-2 transition-all flex items-center gap-3 ${
+                              checkoutForm.deliveryMethod === 'pickup'
+                                ? 'border-primary bg-primary/5'
+                                : 'border-primary/20 hover:border-primary/40'
+                            }`}
+                          >
+                            <Package className={`h-5 w-5 ${checkoutForm.deliveryMethod === 'pickup' ? 'text-primary' : 'text-muted-foreground'}`} />
+                            <div className="text-left">
+                              <div className={`font-medium ${checkoutForm.deliveryMethod === 'pickup' ? 'text-primary' : ''}`}>Pickup</div>
+                              <div className="text-xs text-muted-foreground">Collect from store</div>
+                            </div>
+                          </button>
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="state">State</Label>
-                          <Input
-                            id="state"
-                            required
-                            value={checkoutForm.state}
-                            onChange={(e) => setCheckoutForm({ ...checkoutForm, state: e.target.value })}
-                            placeholder="Enter your state"
-                          />
-                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="country">Country</Label>
-                        <Select
-                          value={checkoutForm.country}
-                          onValueChange={(value) => setCheckoutForm({ ...checkoutForm, country: value })}
-                          required
-                        >
-                          <SelectTrigger id="country">
-                            <SelectValue placeholder="Select your country" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {countryOptions.map((country: { value: string; label: string }) => (
-                              <SelectItem key={country.value} value={country.value}>
-                                {country.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
+                      {checkoutForm.deliveryMethod === 'delivery' && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="address">Address</Label>
+                            <Input
+                              id="address"
+                              required={checkoutForm.deliveryMethod === 'delivery'}
+                              value={checkoutForm.address}
+                              onChange={(e) => setCheckoutForm({ ...checkoutForm, address: e.target.value })}
+                              placeholder="Enter your street address"
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="city">City</Label>
+                              <Input
+                                id="city"
+                                required={checkoutForm.deliveryMethod === 'delivery'}
+                                value={checkoutForm.city}
+                                onChange={(e) => setCheckoutForm({ ...checkoutForm, city: e.target.value })}
+                                placeholder="Enter your city"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="state">State</Label>
+                              <Input
+                                id="state"
+                                required={checkoutForm.deliveryMethod === 'delivery'}
+                                value={checkoutForm.state}
+                                onChange={(e) => setCheckoutForm({ ...checkoutForm, state: e.target.value })}
+                                placeholder="Enter your state"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="country">Country</Label>
+                            <Select
+                              value={checkoutForm.country}
+                              onValueChange={(value) => setCheckoutForm({ ...checkoutForm, country: value })}
+                              required={checkoutForm.deliveryMethod === 'delivery'}
+                            >
+                              <SelectTrigger id="country">
+                                <SelectValue placeholder="Select your country" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {countryOptions.map((country: { value: string; label: string }) => (
+                                  <SelectItem key={country.value} value={country.value}>
+                                    {country.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </>
+                      )}
                     </CardContent>
                   </Card>
 
@@ -646,7 +850,10 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                       className="flex-1 h-11 sm:h-12 bg-primary rounded-xl text-sm sm:text-base"
                       onClick={(e) => {
                         e.preventDefault();
-                        if (!checkoutForm.name || !checkoutForm.phone || !checkoutForm.address || !checkoutForm.city || !checkoutForm.state) {
+                        const isDelivery = checkoutForm.deliveryMethod === 'delivery';
+                        const hasRequiredFields = checkoutForm.name && checkoutForm.phone && 
+                          (!isDelivery || (checkoutForm.address && checkoutForm.city && checkoutForm.state));
+                        if (!hasRequiredFields) {
                           toast({
                             title: "Required fields",
                             description: "Please fill in all required fields",
@@ -663,114 +870,128 @@ export default function CartPage({ params }: { params: Promise<{ storeId: string
                 </form>
 
                 {/* Payment Completed Section - shown after clicking Continue */}
-                {checkoutForm.name && checkoutForm.phone && checkoutForm.address && checkoutForm.city && checkoutForm.state && (
-                  <div className="mt-6 pt-6 border-t space-y-4">
-                    <Button
-                      type="button"
-                      className="w-full h-11 sm:h-12 bg-green-600 hover:bg-green-700 rounded-xl text-sm sm:text-base"
-                      onClick={handlePaymentCompleted}
-                    >
-                      <Check className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                      I Have Completed Payment
-                    </Button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="space-y-4 sm:space-y-6">
-                <div className="p-3 sm:p-4 bg-green-50 border border-green-200 rounded-xl">
-                  <div className="flex items-center gap-2 text-green-700">
-                    <Check className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
-                    <p className="font-bold text-sm sm:text-base">Payment Completed!</p>
-                  </div>
-                  <p className="text-xs sm:text-sm text-green-600 mt-2">
-                    Now upload your transaction receipt and contact the seller via WhatsApp.
-                  </p>
-                </div>
-
-                {/* Receipt Upload */}
-                <Card className="border-primary/20">
-                  <CardHeader className="p-4 sm:p-6">
-                    <CardTitle className="text-lg sm:text-xl">Transaction Receipt</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-4 sm:p-6 pt-0">
-                    <div className="border-2 border-dashed rounded-xl p-4 sm:p-6 text-center">
-                      {receiptPreview ? (
-                        <div className="space-y-4">
-                          <img 
-                            src={receiptPreview} 
-                            alt="Receipt preview" 
-                            className="max-h-48 mx-auto rounded-lg"
-                          />
-                          <div className="flex gap-2 justify-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setReceiptFile(null);
-                                setReceiptPreview(null);
-                              }}
-                            >
-                              <X className="mr-2 h-4 w-4" />
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
-                          <div>
-                            <Label htmlFor="receipt-upload" className="cursor-pointer">
-                              <span className="text-primary font-medium">Click to upload</span> or drag and drop
-                            </Label>
-                            <Input
-                              id="receipt-upload"
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={handleReceiptUpload}
-                            />
-                            <p className="text-xs text-muted-foreground mt-2">
-                              PNG, JPG up to 10MB
-                            </p>
-                          </div>
-                        </div>
-                      )}
+                {(() => {
+                  const isDelivery = checkoutForm.deliveryMethod === 'delivery';
+                  const hasRequiredFields = checkoutForm.name && checkoutForm.phone && 
+                    (!isDelivery || (checkoutForm.address && checkoutForm.city && checkoutForm.state));
+                  return hasRequiredFields && (
+                    <div className="mt-6 pt-6 border-t space-y-4">
+                      <Button
+                        type="button"
+                        className="w-full h-11 sm:h-12 bg-green-600 hover:bg-green-700 rounded-xl text-sm sm:text-base"
+                        onClick={handlePaymentCompleted}
+                      >
+                        <Check className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                        I Have Made the Payment
+                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                  );
+                })()}
+              </>
+            ) : showReceipt && orderId && receiptItems.length > 0 ? (
+              <OrderReceipt
+                orderId={orderId}
+                store={store}
+                items={receiptItems}
+                checkoutForm={receiptCheckoutForm}
+                totalAmount={receiptItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)}
+                onDownloadPDF={() => {
+                  // Temporarily set items for PDF generation
+                  const tempItems = receiptItems;
+                  const tempTotal = receiptItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                  const doc = new jsPDF();
+                  const pageWidth = doc.internal.pageSize.getWidth();
+                  const margin = 20;
+                  let yPos = margin;
 
-                {/* WhatsApp Button */}
-                <Button
-                  type="button"
-                  className="w-full h-11 sm:h-12 bg-green-500 hover:bg-green-600 rounded-xl text-sm sm:text-base"
-                  onClick={openWhatsApp}
-                  disabled={!store?.whatsappNumber}
-                >
-                  <MessageCircle className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                  Contact Seller on WhatsApp
-                </Button>
+                  // Header
+                  doc.setFontSize(20);
+                  doc.setTextColor(100, 100, 255);
+                  doc.text('ORDER RECEIPT', pageWidth / 2, yPos, { align: 'center' });
+                  yPos += 10;
 
-                {!store?.whatsappNumber && (
-                  <p className="text-xs text-muted-foreground text-center">
-                    WhatsApp number not configured by seller
-                  </p>
-                )}
+                  doc.setFontSize(10);
+                  doc.setTextColor(100, 100, 100);
+                  doc.text(store?.storeName || '', pageWidth / 2, yPos, { align: 'center' });
+                  yPos += 15;
 
-                {/* Continue Button */}
-                <div className="pt-4 border-t">
-                  <Button
-                    type="button"
-                    className="w-full h-11 sm:h-12 bg-primary hover:bg-primary/90 rounded-xl text-sm sm:text-base"
-                    onClick={() => {
-                      router.push(`/store/${storeId}/catalog`);
-                    }}
-                  >
-                    Continue Shopping
-                  </Button>
-                </div>
-              </div>
-            )}
+                  // Order Info
+                  doc.setFontSize(12);
+                  doc.setTextColor(0, 0, 0);
+                  doc.text(`Order ID: ${orderId.slice(0, 8).toUpperCase()}`, margin, yPos);
+                  yPos += 7;
+                  doc.setFontSize(10);
+                  doc.text(`Date: ${new Date().toLocaleString()}`, margin, yPos);
+                  yPos += 7;
+                  doc.text(`Status: Pending`, margin, yPos);
+                  yPos += 15;
+
+                  // Customer Info
+                  doc.setFontSize(12);
+                  doc.setTextColor(0, 0, 0);
+                  doc.text('Customer Information', margin, yPos);
+                  yPos += 7;
+                  doc.setFontSize(10);
+                  doc.text(`Name: ${receiptCheckoutForm.name}`, margin, yPos);
+                  yPos += 6;
+                  doc.text(`Phone: ${receiptCheckoutForm.phone}`, margin, yPos);
+                  yPos += 6;
+                  doc.text(`Delivery Method: ${receiptCheckoutForm.deliveryMethod === 'delivery' ? 'Delivery' : 'Pickup'}`, margin, yPos);
+                  yPos += 6;
+                  if (receiptCheckoutForm.deliveryMethod === 'delivery') {
+                    doc.text(`Address: ${receiptCheckoutForm.address}`, margin, yPos);
+                    yPos += 6;
+                    doc.text(`${receiptCheckoutForm.city}, ${receiptCheckoutForm.state}`, margin, yPos);
+                    yPos += 6;
+                    doc.text(receiptCheckoutForm.country, margin, yPos);
+                  }
+                  yPos += 10;
+
+                  // Items
+                  doc.setFontSize(12);
+                  doc.text('Order Items', margin, yPos);
+                  yPos += 7;
+                  doc.setFontSize(10);
+                  
+                  tempItems.forEach((item) => {
+                    const variant = item.variantId && item.product.variants 
+                      ? item.product.variants.find((v: any) => v.id === item.variantId)
+                      : null;
+                    const variantText = variant ? ` (${variant.colorName})` : '';
+                    const itemText = `${item.product.name}${variantText} × ${item.quantity}`;
+                    const priceText = `₦${(item.price * item.quantity).toLocaleString()}`;
+                    
+                    doc.text(itemText, margin, yPos);
+                    doc.text(priceText, pageWidth - margin, yPos, { align: 'right' });
+                    yPos += 6;
+                  });
+
+                  yPos += 5;
+                  doc.setDrawColor(200, 200, 200);
+                  doc.line(margin, yPos, pageWidth - margin, yPos);
+                  yPos += 8;
+
+                  // Total
+                  doc.setFontSize(12);
+                  doc.setFont(undefined, 'bold');
+                  doc.text('Total Amount:', margin, yPos);
+                  doc.text(`₦${tempTotal.toLocaleString()}`, pageWidth - margin, yPos, { align: 'right' });
+                  yPos += 15;
+
+                  // Footer
+                  doc.setFontSize(9);
+                  doc.setFont(undefined, 'normal');
+                  doc.setTextColor(150, 150, 150);
+                  doc.text('Thank you for your order!', pageWidth / 2, yPos, { align: 'center' });
+                  yPos += 5;
+                  doc.text('Please contact the seller via WhatsApp for order updates.', pageWidth / 2, yPos, { align: 'center' });
+
+                  // Save PDF
+                  doc.save(`order-receipt-${orderId.slice(0, 8)}.pdf`);
+                }}
+                onContinueShopping={() => router.push(`/store/${storeId}/catalog`)}
+              />
+            ) : null}
           </div>
         )}
       </main>
