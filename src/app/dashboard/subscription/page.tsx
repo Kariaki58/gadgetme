@@ -75,15 +75,6 @@ export default function SubscriptionPage() {
     }
   };
 
-  const getTrialDaysRemaining = () => {
-    if (!subscription?.trial_end_date) return 0;
-    const now = new Date();
-    const trialEnd = new Date(subscription.trial_end_date);
-    const diff = trialEnd.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return Math.max(0, days);
-  };
-
   const getDaysUntilRenewal = () => {
     if (!subscription?.current_period_end) return 0;
     const now = new Date();
@@ -101,10 +92,8 @@ export default function SubscriptionPage() {
     );
   }
 
-  const trialDaysRemaining = getTrialDaysRemaining();
   const daysUntilRenewal = getDaysUntilRenewal();
-  const isTrialExpired = subscription?.status === 'trial' && trialDaysRemaining === 0;
-  const isExpired = subscription?.status === 'expired' || isTrialExpired;
+  const isExpired = subscription?.status === 'expired';
 
   return (
     <div className="space-y-6">
@@ -125,13 +114,11 @@ export default function SubscriptionPage() {
                 variant={isActive ? 'default' : 'destructive'}
                 className="text-sm"
               >
-                {subscription.status === 'trial' ? 'Trial' :
-                 subscription.status === 'active' ? 'Active' :
+                {subscription.status === 'active' ? 'Active' :
                  subscription.status === 'expired' ? 'Expired' : 'Cancelled'}
               </Badge>
             </CardTitle>
             <CardDescription>
-              {subscription.plan_type === 'trial' && '14-day free trial period'}
               {subscription.plan_type === 'monthly' && 'Monthly subscription plan'}
               {subscription.plan_type === 'yearly' && 'Yearly subscription plan'}
             </CardDescription>
@@ -147,21 +134,6 @@ export default function SubscriptionPage() {
                   {subscription.plan_type}
                 </div>
               </div>
-
-              {subscription.plan_type === 'trial' && subscription.trial_end_date && (
-                <div className="p-4 bg-secondary/50 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                    <Clock className="h-4 w-4" />
-                    <span>Trial Days Remaining</span>
-                  </div>
-                  <div className="text-lg font-semibold">
-                    {trialDaysRemaining} day{trialDaysRemaining !== 1 ? 's' : ''}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Ends: {new Date(subscription.trial_end_date).toLocaleDateString()}
-                  </div>
-                </div>
-              )}
 
               {subscription.current_period_end && (
                 <div className="p-4 bg-secondary/50 rounded-lg">
@@ -191,15 +163,6 @@ export default function SubscriptionPage() {
               )}
             </div>
 
-            {subscription.trial_start_date && (
-              <div className="pt-4 border-t">
-                <div className="text-sm text-muted-foreground">
-                  <span className="font-medium">Trial Started:</span>{' '}
-                  {new Date(subscription.trial_start_date).toLocaleDateString()}
-                </div>
-              </div>
-            )}
-
             {isExpired && (
               <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 rounded-lg">
                 <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200 mb-2">
@@ -207,8 +170,7 @@ export default function SubscriptionPage() {
                   <span className="font-semibold">Subscription Required</span>
                 </div>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
-                  Your {subscription.plan_type === 'trial' ? 'trial has expired' : 'subscription has expired'}. 
-                  Please subscribe to continue using GadgetMe.
+                  Your subscription has expired. Please subscribe to continue using GadgetMe.
                 </p>
               </div>
             )}
@@ -232,7 +194,7 @@ export default function SubscriptionPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-4xl font-bold text-primary">₦20,000</div>
+                  <div className="text-4xl font-bold text-primary">₦7,500</div>
                   <div className="text-sm text-muted-foreground">per month</div>
                 </div>
                 <Separator />
@@ -288,14 +250,14 @@ export default function SubscriptionPage() {
                   <span>Yearly Plan</span>
                   <CheckCircle2 className="h-5 w-5 text-primary" />
                 </CardTitle>
-                <CardDescription>Best value - Save ₦40,000</CardDescription>
+                <CardDescription>Best value - Save ₦15,000</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-4xl font-bold text-primary">₦200,000</div>
+                  <div className="text-4xl font-bold text-primary">₦75,000</div>
                   <div className="text-sm text-muted-foreground">per year</div>
                   <div className="text-sm text-green-600 font-semibold mt-1">
-                    Save ₦40,000 compared to monthly
+                    Save ₦15,000 compared to monthly
                   </div>
                 </div>
                 <Separator />
@@ -370,7 +332,7 @@ export default function SubscriptionPage() {
                   </span>
                 </div>
               )}
-              {subscription.plan_type !== 'trial' && subscription.amount_paid && (
+              {subscription.amount_paid && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Billing amount:</span>
                   <span className="font-medium">

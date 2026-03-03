@@ -56,18 +56,7 @@ export function SubscriptionBlocker() {
     }
   };
 
-  const getTrialDaysRemaining = () => {
-    if (!subscription?.trial_end_date) return 0;
-    const now = new Date();
-    const trialEnd = new Date(subscription.trial_end_date);
-    const diff = trialEnd.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return Math.max(0, days);
-  };
-
-  const trialDaysRemaining = getTrialDaysRemaining();
-  const isTrialExpired = subscription?.status === 'trial' && trialDaysRemaining === 0;
-  const isExpired = subscription?.status === 'expired' || isTrialExpired;
+  const isExpired = subscription?.status === 'expired';
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -77,28 +66,15 @@ export function SubscriptionBlocker() {
             <AlertTriangle className="h-8 w-8 text-amber-600" />
             <div>
               <CardTitle className="text-2xl text-amber-900 dark:text-amber-100">
-                {isExpired ? 'Subscription Expired' : 'Trial Period Expired'}
+                Subscription Required
               </CardTitle>
               <CardDescription className="text-amber-800 dark:text-amber-200 mt-1">
-                {isExpired
-                  ? 'Your subscription has expired. Please renew to continue using GadgetMe.'
-                  : `Your ${subscription?.plan_type === 'trial' ? '14-day trial' : 'subscription'} has ended. Subscribe to continue.`}
+                Please subscribe to continue using GadgetMe. Choose a plan below to get started.
               </CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {subscription?.status === 'trial' && trialDaysRemaining > 0 && (
-            <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200">
-              <div className="flex items-center gap-2 text-blue-800 dark:text-blue-200">
-                <Calendar className="h-5 w-5" />
-                <span className="font-semibold">
-                  {trialDaysRemaining} day{trialDaysRemaining !== 1 ? 's' : ''} remaining in your trial
-                </span>
-              </div>
-            </div>
-          )}
-
           <div className="grid md:grid-cols-2 gap-4">
             {/* Monthly Plan */}
             <Card className="border-primary/20 hover:border-primary/40 transition-colors">
@@ -111,7 +87,7 @@ export function SubscriptionBlocker() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-3xl font-bold text-primary">₦20,000</div>
+                  <div className="text-3xl font-bold text-primary">₦7,500</div>
                   <div className="text-sm text-muted-foreground">per month</div>
                 </div>
                 <ul className="space-y-2 text-sm">
@@ -150,14 +126,14 @@ export function SubscriptionBlocker() {
                   <span>Yearly Plan</span>
                   <CheckCircle2 className="h-5 w-5 text-primary" />
                 </CardTitle>
-                <CardDescription>Best value - Save ₦40,000</CardDescription>
+                <CardDescription>Best value - Save ₦15,000</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="text-3xl font-bold text-primary">₦200,000</div>
+                  <div className="text-3xl font-bold text-primary">₦75,000</div>
                   <div className="text-sm text-muted-foreground">per year</div>
                   <div className="text-xs text-green-600 font-semibold mt-1">
-                    Save ₦40,000 compared to monthly
+                    Save ₦15,000 compared to monthly
                   </div>
                 </div>
                 <ul className="space-y-2 text-sm">

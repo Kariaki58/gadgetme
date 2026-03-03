@@ -67,12 +67,7 @@ export function useSubscription() {
       const now = new Date();
       let active = false;
 
-      if (sub.status === 'trial') {
-        if (sub.trial_end_date) {
-          const trialEnd = new Date(sub.trial_end_date);
-          active = trialEnd > now;
-        }
-      } else if (sub.status === 'active') {
+      if (sub.status === 'active') {
         if (sub.current_period_end) {
           const periodEnd = new Date(sub.current_period_end);
           active = periodEnd > now;

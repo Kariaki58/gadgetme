@@ -151,19 +151,19 @@ export default function ContactPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  Simply sign up for a free account and start your 14-day free trial. No credit card required!
+                  Simply sign up for an account and subscribe to get started. Choose from our affordable monthly or yearly plans.
                 </p>
               </CardContent>
             </Card>
 
             <Card className="border-primary/10">
               <CardHeader>
-                <CardTitle className="text-lg">What happens after my free trial?</CardTitle>
+                <CardTitle className="text-lg">What are the subscription plans?</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground">
-                  After your 14-day free trial, you can choose to subscribe to our monthly (₦20,000) or yearly (₦200,000) plan 
-                  to continue using all features.
+                  We offer affordable monthly (₦7,500) or yearly (₦75,000) plans. 
+                  All plans include full access to all features.
                 </p>
               </CardContent>
             </Card>

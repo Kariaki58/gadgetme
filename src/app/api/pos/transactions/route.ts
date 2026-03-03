@@ -69,7 +69,10 @@ export async function POST(request: NextRequest) {
           if (variant) {
             await supabase
               .from('product_variants')
-              .update({ stock: variant.stock - item.quantity })
+              .update({ 
+                stock: variant.stock - item.quantity,
+                updated_at: new Date().toISOString(),
+              })
               .eq('id', item.variantId);
           }
         }
@@ -84,7 +87,10 @@ export async function POST(request: NextRequest) {
         if (product) {
           await supabase
             .from('products')
-            .update({ base_stock: product.base_stock - item.quantity })
+            .update({ 
+              base_stock: product.base_stock - item.quantity,
+              updated_at: new Date().toISOString(),
+            })
             .eq('id', item.productId);
         }
       }

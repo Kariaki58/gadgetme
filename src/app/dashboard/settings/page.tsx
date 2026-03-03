@@ -563,7 +563,7 @@ export default function SettingsPage() {
                           className="w-full sm:flex-1"
                         >
                           <CreditCard className="mr-2 h-4 w-4" />
-                          <span className="text-xs sm:text-sm">Subscribe Monthly (₦20,000)</span>
+                          <span className="text-xs sm:text-sm">Subscribe Monthly (₦7,500)</span>
                         </Button>
                         <Button
                           onClick={async () => {
@@ -592,7 +592,7 @@ export default function SettingsPage() {
                           className="w-full sm:flex-1 bg-primary"
                         >
                           <CreditCard className="mr-2 h-4 w-4" />
-                          <span className="text-xs sm:text-sm">Subscribe Yearly (₦200,000)</span>
+                          <span className="text-xs sm:text-sm">Subscribe Yearly (₦75,000)</span>
                         </Button>
                       </div>
                     </div>

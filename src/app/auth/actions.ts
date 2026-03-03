@@ -62,17 +62,45 @@ export async function signup(prevState: any, formData: FormData) {
   const adminClient = createAdminClient();
 
   // 2. Create the user profile in public.users
+  // Wait a moment to ensure user is fully committed to auth.users
+  // This is important when email confirmation is enabled
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Use upsert to handle case where profile might already exist
   const { error: profileError } = await adminClient
     .from('users')
-    .insert({
+    .upsert({
       id: authData.user.id,
       full_name: fullName,
       email: email,
       phone: phone,
+    }, {
+      onConflict: 'id'
     });
 
   if (profileError) {
     console.error('[AUTH ACTIONS] Profile creation error:', profileError);
+    // If it's a foreign key error, the user might not exist in auth.users yet
+    // This can happen if email confirmation is required
+    if (profileError.code === '23503') {
+      // Wait longer and retry
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { error: retryError } = await adminClient
+        .from('users')
+        .upsert({
+          id: authData.user.id,
+          full_name: fullName,
+          email: email,
+          phone: phone,
+        }, {
+          onConflict: 'id'
+        });
+      
+      if (retryError) {
+        console.error('[AUTH ACTIONS] Profile creation retry error:', retryError);
+        // Continue anyway - user can log in later
+      }
+    }
   }
 
   // 3. Create the store
@@ -98,7 +126,11 @@ export async function signup(prevState: any, formData: FormData) {
       storeId = generateStoreId();
     }
 
-    const { data: storeData, error: storeError } = await adminClient
+    // Additional wait to ensure user is fully committed to database
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    let storeData;
+    const { data: createdStore, error: storeError } = await adminClient
       .from('stores')
       .insert({
         user_id: authData.user.id,
@@ -111,7 +143,65 @@ export async function signup(prevState: any, formData: FormData) {
 
     if (storeError) {
       console.error('[AUTH ACTIONS] Store creation error:', storeError);
-      return { error: 'Account created, but failed to initialize store.' };
+      
+      // If it's a foreign key error, try to ensure user profile exists
+      if (storeError.code === '23503' && storeError.message?.includes('users')) {
+        // The users table foreign key failed - user might not exist in auth.users yet
+        // This can happen if email confirmation is enabled
+        // Wait a bit longer and retry
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Ensure user profile exists
+        await adminClient
+          .from('users')
+          .upsert({
+            id: authData.user.id,
+            full_name: fullName,
+            email: email,
+            phone: phone,
+          }, {
+            onConflict: 'id'
+          });
+      }
+      
+      // Retry store creation
+      const { data: retryStore, error: retryError } = await adminClient
+        .from('stores')
+        .insert({
+          user_id: authData.user.id,
+          store_id: storeId,
+          store_name: storeName,
+          owner_email: email,
+        })
+        .select()
+        .single();
+      
+      if (retryError) {
+        console.error('[AUTH ACTIONS] Store creation retry error:', retryError);
+        return { error: 'Account created, but failed to initialize store. Please try logging in.' };
+      }
+      
+      storeData = retryStore;
+    } else {
+      storeData = createdStore;
+    }
+
+    // 4. Create subscription directly (no triggers)
+    // Create expired subscription - user must pay immediately to activate
+    if (storeData) {
+      const { error: subscriptionError } = await adminClient
+        .from('subscriptions')
+        .insert({
+          store_id: storeData.id,
+          user_id: authData.user.id,
+          plan_type: 'monthly',
+          status: 'expired',
+        });
+
+      if (subscriptionError) {
+        console.error('[AUTH ACTIONS] Subscription creation error:', subscriptionError);
+        // Don't fail signup if subscription creation fails - user can create it later
+      }
     }
 
     // Create referral code for the new user

@@ -331,7 +331,7 @@ export default function ReferralPage() {
               <div>
                 <h3 className="font-semibold">They Sign Up</h3>
                 <p className="text-sm text-muted-foreground">
-                  When someone uses your link to sign up, they get a 14-day free trial.
+                  When someone uses your link to sign up, they can subscribe to the platform.
                 </p>
               </div>
             </div>
@@ -340,9 +340,9 @@ export default function ReferralPage() {
                 3
               </div>
               <div>
-                <h3 className="font-semibold">They Pay</h3>
+                <h3 className="font-semibold">You Earn</h3>
                 <p className="text-sm text-muted-foreground">
-                  After their trial, if they subscribe (monthly or yearly), you earn ₦5,000!
+                  When they subscribe (monthly or yearly), you earn ₦5,000!
                 </p>
               </div>
             </div>

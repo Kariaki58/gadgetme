@@ -54,7 +54,7 @@ export async function PUT(
       ? imageUrls.slice(0, 5) 
       : (imageUrls ? [imageUrls] : []);
 
-    // Update product
+    // Update product (explicitly set updated_at - no triggers)
     const { data: product, error: productError } = await supabase
       .from('products')
       .update({
@@ -65,6 +65,7 @@ export async function PUT(
         selling_price: sellingPrice,
         base_stock: baseStock,
         image_urls: imageUrlsArray,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()

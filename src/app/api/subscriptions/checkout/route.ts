@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate amount based on plan
-    const amount = planType === 'monthly' ? 20000 : 200000;
+    const amount = planType === 'monthly' ? 7500 : 75000; // ₦7,500/month or ₦75,000/year
     const planName = planType === 'monthly' ? 'Monthly Plan' : 'Yearly Plan';
     const planInterval = planType === 'monthly' ? 'monthly' : 'annually';
 

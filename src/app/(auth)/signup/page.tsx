@@ -134,13 +134,6 @@ function SignupForm() {
                 </Badge>
               </div>
             )}
-            {selectedPlan === 'free' && (
-              <div className="flex justify-center mt-2">
-                <Badge variant="outline" className="border-green-500 text-green-600">
-                  Starting with 14-day free trial
-                </Badge>
-              </div>
-            )}
           </CardHeader>
           <CardContent>
             <Form {...form}>

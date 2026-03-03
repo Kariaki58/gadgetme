@@ -43,12 +43,13 @@ export async function POST(
       );
     }
 
-    // Update payment status
+    // Update payment status (explicitly set updated_at - no triggers)
     const { error: updateError } = await supabase
       .from('orders')
       .update({
         payment_status: 'confirmed',
         payment_confirmed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq('id', id);
 
@@ -73,7 +74,10 @@ export async function POST(
           if (variant) {
             await supabase
               .from('product_variants')
-              .update({ stock: Math.max(0, variant.stock - item.quantity) })
+              .update({ 
+                stock: Math.max(0, variant.stock - item.quantity),
+                updated_at: new Date().toISOString(),
+              })
               .eq('id', item.variant_id);
           }
         } else {
@@ -87,7 +91,10 @@ export async function POST(
           if (product) {
             await supabase
               .from('products')
-              .update({ base_stock: Math.max(0, product.base_stock - item.quantity) })
+              .update({ 
+                base_stock: Math.max(0, product.base_stock - item.quantity),
+                updated_at: new Date().toISOString(),
+              })
               .eq('id', item.product_id);
           }
         }

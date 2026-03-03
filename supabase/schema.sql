@@ -525,12 +525,11 @@ CREATE POLICY "Users can delete pos transaction items from their store" ON pos_t
     )
 );
 
--- Drop existing functions if they exist
+-- Drop existing functions if they exist (keeping generate_store_id for application use)
 DROP FUNCTION IF EXISTS generate_store_id();
+DROP FUNCTION IF EXISTS update_updated_at_column();
 
-DROP FUNCTION IF EXISTS update_updated_at_column ();
-
--- Function to generate short store ID
+-- Function to generate short store ID (used by application code, not triggers)
 CREATE FUNCTION generate_store_id()
 RETURNS TEXT AS $$
 DECLARE
@@ -545,33 +544,5 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Function to update updated_at timestamp
-CREATE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Drop existing triggers if they exist
-DROP TRIGGER IF EXISTS update_stores_updated_at ON stores;
-
-DROP TRIGGER IF EXISTS update_products_updated_at ON products;
-
-DROP TRIGGER IF EXISTS update_product_variants_updated_at ON product_variants;
-
-DROP TRIGGER IF EXISTS update_orders_updated_at ON orders;
-
--- Triggers to auto-update updated_at
-CREATE TRIGGER update_stores_updated_at BEFORE UPDATE ON stores
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_products_updated_at BEFORE UPDATE ON products
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_product_variants_updated_at BEFORE UPDATE ON product_variants
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON orders
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Note: All updated_at timestamps are handled by application code
+-- No triggers are used - application explicitly sets updated_at on updates

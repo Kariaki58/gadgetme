@@ -126,11 +126,11 @@ export default function Home() {
               <div className="flex items-center gap-8 pt-8 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <span>14-Day Free Trial</span>
+                  <span>Affordable Pricing</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
-                  <span>No Credit Card Required</span>
+                  <span>Secure Payment</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -575,7 +575,7 @@ export default function Home() {
                 Simple, Transparent Pricing
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Start with a 14-day free trial. No credit card required. Choose the plan that works for you.
+                Simple, affordable pricing. Choose the plan that works for you. Pay immediately to get started.
               </p>
               
               {/* Billing Toggle */}
@@ -602,7 +602,7 @@ export default function Home() {
                   Yearly
                 </Label>
                 {billingCycle === 'yearly' && (
-                  <Badge className="bg-green-500 text-white ml-2">Save ₦40,000</Badge>
+                  <Badge className="bg-green-500 text-white ml-2">Save ₦15,000</Badge>
                 )}
               </div>
             </div>
@@ -622,20 +622,20 @@ export default function Home() {
                   <CardDescription>
                     {billingCycle === 'monthly' 
                       ? 'Perfect for growing businesses' 
-                      : 'Best value - Save ₦40,000'}
+                      : 'Best value - Save ₦15,000'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="text-center">
                     <div className="text-4xl font-bold text-primary">
-                      ₦{billingCycle === 'monthly' ? '20,000' : '200,000'}
+                      ₦{billingCycle === 'monthly' ? '7,500' : '75,000'}
                     </div>
                     <div className="text-sm text-muted-foreground mt-1">
                       per {billingCycle === 'monthly' ? 'month' : 'year'}
                     </div>
                     {billingCycle === 'yearly' && (
                       <div className="text-xs text-green-600 font-semibold mt-2">
-                        Only ₦16,667/month (billed annually)
+                        Only ₦6,250/month (billed annually)
                       </div>
                     )}
                   </div>
@@ -686,7 +686,7 @@ export default function Home() {
 
             <div className="text-center mt-12">
               <p className="text-sm text-muted-foreground">
-                Start with a 14-day free trial. No credit card required to start.
+                Secure payment processing. Get started immediately after payment.
               </p>
             </div>
           </div>
@@ -973,7 +973,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    "Best investment I made for my business. The 14-day free trial let me test everything. Now I can't imagine running my store without it. My revenue tracking, inventory, everything is perfect!"
+                    "Best investment I made for my business. The affordable pricing and powerful features make it perfect for my store. My revenue tracking, inventory, everything is perfect!"
                   </p>
                 </CardContent>
               </Card>
@@ -1020,7 +1020,7 @@ export default function Home() {
                       </div>
                       <h3 className="font-semibold">They Sign Up</h3>
                       <p className="text-sm text-muted-foreground">
-                        They get a 14-day free trial to test the platform
+                        They sign up and subscribe to the platform
                       </p>
                     </div>
                     <div className="text-center space-y-2">
@@ -1029,7 +1029,7 @@ export default function Home() {
                       </div>
                       <h3 className="font-semibold">You Earn</h3>
                       <p className="text-sm text-muted-foreground">
-                        When they pay after trial, you earn ₦5,000!
+                        When they subscribe, you earn ₦5,000!
                       </p>
                     </div>
                   </div>
@@ -1089,7 +1089,7 @@ export default function Home() {
                   <>
                     <Button asChild size="lg" className="px-8 py-6 text-lg bg-white text-primary hover:bg-white/90 shadow-xl">
                       <Link href="/signup" className="flex items-center gap-2">
-                        Start Free Trial
+                        Get Started
                         <ArrowRight className="h-5 w-5" />
                       </Link>
                     </Button>
