@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS referral_earnings (
     referred_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     referral_registration_id UUID NOT NULL REFERENCES referral_registrations(id) ON DELETE CASCADE,
     subscription_id UUID REFERENCES subscriptions(id) ON DELETE SET NULL,
-    amount DECIMAL(12, 2) NOT NULL DEFAULT 5000.00,
+    amount DECIMAL(12, 2) NOT NULL DEFAULT 2500.00,
     status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'paid', 'cancelled'
     payment_date TIMESTAMP WITH TIME ZONE,
     payment_notes TEXT,
@@ -67,6 +67,10 @@ ALTER TABLE referral_earnings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE referral_bank_accounts ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for referral_codes
+DROP POLICY IF EXISTS "Users can view their own referral codes" ON referral_codes;
+DROP POLICY IF EXISTS "Users can insert their own referral codes" ON referral_codes;
+DROP POLICY IF EXISTS "Users can update their own referral codes" ON referral_codes;
+
 CREATE POLICY "Users can view their own referral codes" ON referral_codes
     FOR SELECT USING (auth.uid() = user_id);
 
@@ -77,6 +81,9 @@ CREATE POLICY "Users can update their own referral codes" ON referral_codes
     FOR UPDATE USING (auth.uid() = user_id);
 
 -- RLS Policies for referral_registrations
+DROP POLICY IF EXISTS "Users can view referrals they made" ON referral_registrations;
+DROP POLICY IF EXISTS "Users can view referrals where they were referred" ON referral_registrations;
+
 CREATE POLICY "Users can view referrals they made" ON referral_registrations
     FOR SELECT USING (auth.uid() = referrer_user_id);
 
@@ -84,10 +91,16 @@ CREATE POLICY "Users can view referrals where they were referred" ON referral_re
     FOR SELECT USING (auth.uid() = referred_user_id);
 
 -- RLS Policies for referral_earnings
+DROP POLICY IF EXISTS "Users can view their own earnings" ON referral_earnings;
+
 CREATE POLICY "Users can view their own earnings" ON referral_earnings
     FOR SELECT USING (auth.uid() = referrer_user_id);
 
 -- RLS Policies for referral_bank_accounts
+DROP POLICY IF EXISTS "Users can view their own bank accounts" ON referral_bank_accounts;
+DROP POLICY IF EXISTS "Users can insert their own bank accounts" ON referral_bank_accounts;
+DROP POLICY IF EXISTS "Users can update their own bank accounts" ON referral_bank_accounts;
+
 CREATE POLICY "Users can view their own bank accounts" ON referral_bank_accounts
     FOR SELECT USING (auth.uid() = user_id);
 

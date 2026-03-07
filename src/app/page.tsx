@@ -991,7 +991,7 @@ export default function Home() {
                   <span className="text-sm font-medium text-primary">Referral Program</span>
                 </div>
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">
-                  Earn ₦5,000 Per Referral
+                  Earn ₦2,500 Per Referral
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                   Share Karigad with others and earn money when they subscribe after their free trial
@@ -1029,7 +1029,7 @@ export default function Home() {
                       </div>
                       <h3 className="font-semibold">You Earn</h3>
                       <p className="text-sm text-muted-foreground">
-                        When they subscribe, you earn ₦5,000!
+                        When they subscribe, you earn ₦2,500!
                       </p>
                     </div>
                   </div>

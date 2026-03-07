@@ -176,7 +176,7 @@ export default function ReferralRegisterPage() {
             </div>
             <CardTitle className="text-2xl text-center">Register for Referrals</CardTitle>
             <CardDescription className="text-center">
-              Earn ₦5,000 for every successful referral
+              Earn ₦2,500 for every successful referral
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -242,7 +242,7 @@ export default function ReferralRegisterPage() {
 
             <div className="mt-6 p-4 bg-primary/5 rounded-lg">
               <p className="text-sm text-muted-foreground text-center">
-                You'll earn ₦5,000 when someone you refer subscribes to a monthly or yearly plan.
+                You'll earn ₦2,500 when someone you refer subscribes to a monthly or yearly plan.
               </p>
             </div>
           </CardContent>

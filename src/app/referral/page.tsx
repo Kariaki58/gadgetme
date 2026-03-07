@@ -189,7 +189,7 @@ export default function ReferralPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Referral Program</h1>
-            <p className="text-muted-foreground mt-1">Earn ₦5,000 for every successful referral</p>
+            <p className="text-muted-foreground mt-1">Earn ₦2,500 for every successful referral</p>
           </div>
           {!hasBankAccount && (
             <Button onClick={() => router.push('/referral/register')} variant="outline">
@@ -342,7 +342,7 @@ export default function ReferralPage() {
               <div>
                 <h3 className="font-semibold">You Earn</h3>
                 <p className="text-sm text-muted-foreground">
-                  When they subscribe (monthly or yearly), you earn ₦5,000!
+                  When they subscribe (monthly or yearly), you earn ₦2,500!
                 </p>
               </div>
             </div>

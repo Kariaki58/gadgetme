@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
             .maybeSingle();
 
           if (!existingEarnings) {
-            // Create referral earnings (₦5,000)
+            // Create referral earnings (₦2,500)
             await adminSupabase
               .from('referral_earnings')
               .insert({
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
                 referred_user_id: subscription.user_id,
                 referral_registration_id: referralReg.id,
                 subscription_id: subscription_id,
-                amount: 5000.00,
+                amount: 2500.00,
                 status: 'pending',
               });
             
